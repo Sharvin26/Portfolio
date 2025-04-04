@@ -27,27 +27,35 @@ export default function Home() {
                     <nav className="hidden md:flex gap-6">
                         <Link
                             href="#about"
-                            className="text-sm font-medium hover:underline underline-offset-4"
+                            className="text-md font-medium hover:underline underline-offset-4"
                         >
                             About
                         </Link>
                         <Link
                             href="#experience"
-                            className="text-sm font-medium hover:underline underline-offset-4"
+                            className="text-md font-medium hover:underline underline-offset-4"
                         >
                             Experience
                         </Link>
                         <Link
                             href="#skills"
-                            className="text-sm font-medium hover:underline underline-offset-4"
+                            className="text-md font-medium hover:underline underline-offset-4"
                         >
                             Skills
                         </Link>
                         <Link
                             href="#hobbies"
-                            className="text-sm font-medium hover:underline underline-offset-4"
+                            className="text-md font-medium hover:underline underline-offset-4"
                         >
                             Hobbies
+                        </Link>
+                        <Link
+                            href="https://www.mtechzilla.com/blog"
+                            className="text-md font-medium hover:underline underline-offset-4"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Blogs
                         </Link>
                     </nav>
                     <div className="flex gap-4">
@@ -57,7 +65,7 @@ export default function Home() {
                             rel="noopener noreferrer"
                         >
                             <Button variant="ghost" size="icon">
-                                <TwitterIcon className="h-5 w-5" />
+                                <TwitterIcon className="h-6 w-6" />
                                 <span className="sr-only">Twitter</span>
                             </Button>
                         </Link>
@@ -67,7 +75,7 @@ export default function Home() {
                             rel="noopener noreferrer"
                         >
                             <Button variant="ghost" size="icon">
-                                <LinkedInIcon className="h-5 w-5" />
+                                <LinkedInIcon className="h-6 w-6" />
                                 <span className="sr-only">LinkedIn</span>
                             </Button>
                         </Link>
@@ -77,7 +85,7 @@ export default function Home() {
                             rel="noopener noreferrer"
                         >
                             <Button variant="ghost" size="icon">
-                                <GithubIcon className="h-5 w-5" />
+                                <GithubIcon className="h-6 w-6" />
                                 <span className="sr-only">Github</span>
                             </Button>
                         </Link>
@@ -100,9 +108,19 @@ export default function Home() {
                                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
                                     Engineer by Passion and Choice.
                                 </h1>
-                                <p className="text-muted-foreground text-lg">
-                                    Founder @ MTechZilla
-                                </p>
+                                <Link
+                                    href="https://www.mtechzilla.com/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <p className="text-muted-foreground text-lg">
+                                        Founder @{" "}
+                                        <span className="underline">
+                                            MTechZilla
+                                        </span>
+                                    </p>
+                                </Link>
+
                                 <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto lg:mx-0">
                                     I&apos;m a passionate developer and founder
                                     leading MTechZilla, a software development
@@ -394,7 +412,7 @@ export default function Home() {
                                         Writing & Sharing
                                     </h3>
                                     <p className="text-muted-foreground">
-                                        I write articles on freeCodeCamp to
+                                        I write articles on MTechZilla and freeCodeCamp website to
                                         share what I learn. It’s a great way to
                                         give back and connect with other
                                         developers.
@@ -418,7 +436,7 @@ export default function Home() {
                     <p className="text-sm text-muted-foreground">
                         Founder of{" "}
                         <Link
-                            href="https://mtechzilla.com"
+                            href="https://www.mtechzilla.com/"
                             className="underline underline-offset-4"
                             target="_blank"
                             rel="noopener noreferrer"
