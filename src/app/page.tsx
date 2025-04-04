@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 import { ExperienceItem } from "@/components/experience-item";
 import { GithubIcon } from "@/components/icons/github";
@@ -14,6 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export default function Home() {
     return (
         <div className="flex min-h-screen flex-col">
+            {/* Navbar Section */}
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container flex h-16 items-center justify-between">
                     <Link
@@ -82,53 +84,74 @@ export default function Home() {
                     </div>
                 </div>
             </header>
+
             <main className="flex-1">
-                <section className="py-24 md:py-32">
-                    <div className="container px-4 md:px-6">
-                        <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-32 xl:grid-cols-[1fr_450px]">
-                            <div className="flex flex-col justify-center space-y-4">
-                                <div className="space-y-2">
-                                    <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                                        Hello, I&apos;m Sharvin Shah
-                                    </h1>
-                                    <p className="text-xl text-muted-foreground mt-4">
-                                        Founder @ MTechZilla
-                                    </p>
-                                </div>
-                                <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                {/* Hero Section */}
+                <section className="py-20 md:py-32">
+                    <div className="container mx-auto px-4 sm:px-6 md:px-8">
+                        <div className="grid gap-10 md:gap-16 lg:grid-cols-2 items-center">
+                            {/* Text Block */}
+                            <motion.div
+                                className="space-y-5 text-center lg:text-left"
+                                initial={{ opacity: 0, x: -50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.6, ease: "easeOut" }}
+                            >
+                                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                                    Engineer by Passion and Choice.
+                                </h1>
+                                <p className="text-muted-foreground text-lg">
+                                    Founder @ MTechZilla
+                                </p>
+                                <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto lg:mx-0">
                                     I&apos;m a passionate developer and founder
                                     leading MTechZilla, a software development
-                                    agency specializing in ai, web and mobile
+                                    agency specializing in AI, web and mobile
                                     applications. I enjoy building innovative
                                     solutions and sharing knowledge with the
                                     tech community.
                                 </p>
-                            </div>
-                            <div className="flex justify-center lg:justify-end">
-                                <div
-                                    className="rounded-full bg-white overflow-hidden"
-                                    style={{ width: 400, height: 400 }}
-                                >
+                            </motion.div>
+
+                            {/* Image Block */}
+                            <motion.div
+                                className="flex justify-center"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{
+                                    duration: 0.6,
+                                    delay: 0.3,
+                                    ease: "easeOut",
+                                }}
+                            >
+                                <div className="w-72 h-72 sm:w-80 sm:h-80 rounded-full overflow-hidden border shadow-lg">
                                     <Image
                                         src="/sharvin.png"
                                         alt="Sharvin Shah"
-                                        width={400}
-                                        height={400}
-                                        className="object-contain"
+                                        width={320}
+                                        height={320}
+                                        className="w-full h-full object-cover object-top"
                                         priority
                                     />
                                 </div>
-                            </div>
+                            </motion.div>
                         </div>
                     </div>
                 </section>
 
+                {/* About Section */}
                 <section
                     id="about"
                     className="py-12 md:py-16 lg:py-20 bg-muted/50"
                 >
                     <div className="container px-4 md:px-6">
-                        <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6 }}
+                            className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center"
+                        >
                             <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-5xl">
                                 About Me
                             </h2>
@@ -163,13 +186,21 @@ export default function Home() {
                                 pastime that keeps me entertained and connected
                                 with the latest in interactive technology.
                             </p>
-                        </div>
+                        </motion.div>
                     </div>
                 </section>
 
+                {/* Professional Experience Section */}
                 <section id="experience" className="py-12 md:py-16 lg:py-20">
                     <div className="container px-4 md:px-6">
-                        <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6 }}
+                            className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center"
+                        >
+                            {" "}
                             <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-5xl">
                                 Professional Experience
                             </h2>
@@ -178,8 +209,14 @@ export default function Home() {
                                 and IoT systems to founding and growing a tech
                                 agency.
                             </p>
-                        </div>
-                        <div className="mx-auto max-w-3xl mt-8">
+                        </motion.div>
+                        <motion.div
+                            initial={{ opacity: 0, y: 40 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="mx-auto max-w-3xl mt-8"
+                        >
                             <ExperienceItem
                                 title="Founder & CEO"
                                 company="MTechZilla"
@@ -204,16 +241,23 @@ export default function Home() {
                                 period="Oct 2018 – Mar 2020"
                                 description="Worked on IoT and cloud infrastructure. I was responsible for building backend services, managing device data, and creating secure APIs. I also developed a system for Over-the-Air (OTA) updates for smart devices, making it easy to deploy software updates without manual steps."
                             />
-                        </div>
+                        </motion.div>
                     </div>
                 </section>
 
+                {/* Skills & Expertise Section */}
                 <section
                     id="skills"
                     className="py-12 md:py-16 lg:py-20 bg-muted/50"
                 >
                     <div className="container px-4 md:px-6">
-                        <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6 }}
+                            className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center"
+                        >
                             <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-5xl">
                                 Skills & Expertise
                             </h2>
@@ -221,8 +265,15 @@ export default function Home() {
                                 Technologies and methodologies I&apos;ve
                                 mastered throughout my career.
                             </p>
-                        </div>
-                        <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3 lg:gap-8 mt-8">
+                        </motion.div>
+                        <motion.div
+                            initial={{ opacity: 0, y: 40 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3 lg:gap-8 mt-8"
+                        >
+                            {" "}
                             <SkillCard
                                 title="Frontend Development"
                                 skills={[
@@ -269,13 +320,20 @@ export default function Home() {
                                     "Technical Writing",
                                 ]}
                             />
-                        </div>
+                        </motion.div>
                     </div>
                 </section>
 
+                {/* Hobbies & Interests Section */}
                 <section id="hobbies" className="py-12 md:py-16 lg:py-20">
                     <div className="container px-4 md:px-6">
-                        <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6 }}
+                            className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center"
+                        >
                             <h2 className="text-3xl font-bold leading-[1.1] sm:text-3xl md:text-5xl">
                                 Hobbies & Interests
                             </h2>
@@ -283,8 +341,14 @@ export default function Home() {
                                 Outside of tech, I enjoy things that help me
                                 relax, stay creative, and explore new ideas.
                             </p>
-                        </div>
-                        <div className="mx-auto max-w-3xl mt-8 grid gap-6 sm:grid-cols-2">
+                        </motion.div>
+                        <motion.div
+                            initial={{ opacity: 0, y: 40 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="mx-auto max-w-3xl mt-8 grid gap-6 sm:grid-cols-2"
+                        >
                             <Card>
                                 <CardContent className="p-6">
                                     <h3 className="text-xl font-bold mb-2">
@@ -337,10 +401,12 @@ export default function Home() {
                                     </p>
                                 </CardContent>
                             </Card>
-                        </div>
+                        </motion.div>
                     </div>
                 </section>
             </main>
+
+            {/* Footer Section */}
             <footer className="border-t py-6 md:py-8">
                 <div className="container flex flex-col items-center justify-center gap-4 text-center md:flex-row md:justify-between md:text-left">
                     <div className="flex flex-col gap-1">
