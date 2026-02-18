@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-    variable: "--font-geist-sans",
+const cormorant = Cormorant_Garamond({
+    variable: "--font-cormorant",
     subsets: ["latin"],
+    weight: ["300", "400", "500", "600"],
+    display: "swap",
 });
 
-const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
+const dmSans = DM_Sans({
+    variable: "--font-dm-sans",
     subsets: ["latin"],
+    weight: ["300", "400", "500"],
+    display: "swap",
 });
 
 export const metadata: Metadata = {
+    metadataBase: new URL("https://sharvinshah.com"),
     title: "Sharvin Shah",
     description:
         "MTechZilla Founder & CEO | Web & Mobile App Development, AI/ML Solutions",
@@ -27,11 +32,9 @@ export default function RootLayout({
         <html lang="en">
             <link rel="icon" href="/favicon.ico" sizes="any" />
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                className={`${cormorant.variable} ${dmSans.variable} antialiased`}
             >
-                <div className="container max-w-[1200px] mx-auto px-4">
-                    {children}
-                </div>
+                {children}
             </body>
         </html>
     );
