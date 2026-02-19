@@ -12,7 +12,7 @@ export function SkillCard({ number, title, skills }: SkillCardProps) {
         >
             <span
                 className="text-xs font-bold tracking-widest"
-                style={{ color: "var(--primary-300)" }}
+                style={{ color: "var(--neutral-700)" }}
             >
                 {number}
             </span>
