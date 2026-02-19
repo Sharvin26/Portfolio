@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { GithubIcon } from "@/components/icons/github";
-import { LinkedInIcon } from "@/components/icons/linkedin";
-import { TwitterIcon } from "@/components/icons/twitter";
 
 const navLinks = [
     { label: "About", href: "#about" },
@@ -16,6 +13,7 @@ const navLinks = [
 
 export function NavBar() {
     const [scrolled, setScrolled] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -25,25 +23,22 @@ export function NavBar() {
 
     return (
         <header
-            className={`sticky top-0 z-50 w-full border-b border-border transition-all duration-300 ${
-                scrolled
-                    ? "bg-[rgba(250,250,248,0.92)] backdrop-blur-md"
-                    : "bg-background"
+            className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+                scrolled ? "nav-scrolled" : "bg-white border-b border-border"
             }`}
         >
-            <div className="max-w-[1200px] mx-auto px-6 flex h-14 items-center justify-between gap-8">
+            <div className="max-w-[1200px] mx-auto px-6 flex h-14 items-center justify-between">
 
                 {/* Brand */}
                 <Link
                     href="/"
-                    className="shrink-0 uppercase text-sm tracking-[0.08em] font-semibold text-foreground hover:text-accent transition-colors"
-                    style={{ fontFamily: "var(--font-dm-sans), system-ui, sans-serif" }}
+                    className="shrink-0 text-base font-bold tracking-wide text-foreground hover:text-accent transition-colors"
                 >
                     Sharvin Shah
                 </Link>
 
-                {/* Nav links - Tailwind after: for underline animation */}
-                <nav className="hidden md:flex items-center gap-7">
+                {/* Nav links */}
+                <nav className="hidden md:flex items-center gap-8">
                     {navLinks.map(({ label, href, external }) => (
                         <Link
                             key={label}
@@ -51,45 +46,64 @@ export function NavBar() {
                             {...(external
                                 ? { target: "_blank", rel: "noopener noreferrer" }
                                 : {})}
-                            className="relative uppercase text-sm tracking-[0.06em] font-medium text-foreground/60 hover:text-foreground transition-colors duration-200 after:absolute after:bottom-[-2px] after:left-0 after:h-px after:w-0 after:bg-foreground after:transition-[width] after:duration-300 hover:after:w-full"
+                            className="nav-link"
                         >
                             {label}
                         </Link>
                     ))}
                 </nav>
 
-                {/* Social icons */}
-                <div className="flex items-center gap-4 shrink-0">
+                {/* CTA */}
+                <div className="hidden md:flex shrink-0">
                     <Link
-                        href="https://x.com/sharvinshah26"
+                        href="https://www.mtechzilla.com/contact"
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label="Twitter"
-                        className="text-foreground/40 hover:text-foreground transition-colors duration-200"
+                        className="nav-cta"
                     >
-                        <TwitterIcon className="h-[18px] w-[18px]" />
-                    </Link>
-                    <Link
-                        href="https://www.linkedin.com/in/sharvinshah/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="LinkedIn"
-                        className="text-foreground/40 hover:text-foreground transition-colors duration-200"
-                    >
-                        <LinkedInIcon className="h-[18px] w-[18px]" />
-                    </Link>
-                    <Link
-                        href="https://github.com/Sharvin26"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="GitHub"
-                        className="text-foreground/40 hover:text-foreground transition-colors duration-200"
-                    >
-                        <GithubIcon className="h-[18px] w-[18px]" />
+                        Hire Me
                     </Link>
                 </div>
 
+                {/* Mobile hamburger */}
+                <button
+                    className="md:hidden flex flex-col justify-center gap-[5px] p-1"
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    aria-label="Toggle menu"
+                >
+                    <span className={`block h-px w-5 bg-foreground transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-[6px]" : ""}`} />
+                    <span className={`block h-px w-5 bg-foreground transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} />
+                    <span className={`block h-px w-5 bg-foreground transition-all duration-300 origin-center ${menuOpen ? "-rotate-45 -translate-y-[6px]" : ""}`} />
+                </button>
             </div>
+
+            {/* Mobile menu */}
+            {menuOpen && (
+                <div className="md:hidden bg-white border-t border-border px-6 py-5 flex flex-col gap-4">
+                    {navLinks.map(({ label, href, external }) => (
+                        <Link
+                            key={label}
+                            href={href}
+                            {...(external
+                                ? { target: "_blank", rel: "noopener noreferrer" }
+                                : {})}
+                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            {label}
+                        </Link>
+                    ))}
+                    <Link
+                        href="https://www.mtechzilla.com/contact"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="nav-cta self-start mt-1"
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        Hire Me
+                    </Link>
+                </div>
+            )}
         </header>
     );
 }

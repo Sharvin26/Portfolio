@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Urbanist, Manrope } from "next/font/google";
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
-    variable: "--font-cormorant",
+const urbanist = Urbanist({
+    variable: "--font-urbanist",
     subsets: ["latin"],
-    weight: ["300", "400", "500", "600"],
+    weight: ["300", "400", "500", "600", "700", "800"],
     display: "swap",
 });
 
-const dmSans = DM_Sans({
-    variable: "--font-dm-sans",
+const manrope = Manrope({
+    variable: "--font-manrope",
     subsets: ["latin"],
-    weight: ["300", "400", "500"],
+    weight: ["300", "400", "500", "600", "700", "800"],
     display: "swap",
 });
 
@@ -32,7 +32,7 @@ export default function RootLayout({
         <html lang="en">
             <link rel="icon" href="/favicon.ico" sizes="any" />
             <body
-                className={`${cormorant.variable} ${dmSans.variable} antialiased`}
+                className={`${urbanist.variable} ${manrope.variable} antialiased`}
             >
                 {children}
             </body>
