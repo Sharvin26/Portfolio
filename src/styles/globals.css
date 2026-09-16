@@ -540,18 +540,6 @@ pre.astro-code {
   color: var(--foreground);
 }
 
-/* ─── Experience rail (timeline) ─────────────────────────── */
-
-.experience-dot {
-  position: absolute;
-  left: 0;
-  top: 0.4rem;
-  transform: translateX(-50%);
-  width: 8px;
-  height: 8px;
-  background-color: var(--accent-500);
-}
-
 /* ─── Hero rule ──────────────────────────────────────────── */
 
 .hero-rule {
@@ -856,7 +844,6 @@ pre.astro-code {
 #about,
 #expertise,
 #responsible-ai,
-#experience,
 #stack {
   scroll-margin-top: 6.5rem;
 }
