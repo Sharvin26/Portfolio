@@ -76,13 +76,13 @@
     @apply border-border;
   }
   html {
-    overflow-x: hidden;
+    overflow-x: clip;
     /* Stop iOS Safari inflating body text on orientation change */
     -webkit-text-size-adjust: 100%;
   }
   body {
     @apply bg-background text-foreground;
-    overflow-x: hidden;
+    overflow-x: clip;
     font-family: "Urbanist Variable", system-ui, sans-serif;
     font-weight: 400;
     line-height: 1.7;
@@ -752,7 +752,7 @@ pre.astro-code {
   padding-bottom: 1.25rem;
   color: var(--foreground);
   line-height: 1.7;
-  max-width: 35rem;
+  max-width: 36rem;
 }
 
 /* ─── Focus indicator (HIG: focus must be obvious) ───────── */
@@ -873,7 +873,7 @@ pre.astro-code {
 .prose-content > blockquote,
 .prose-content > h2,
 .prose-content > h3 {
-  max-width: 35rem;
+  max-width: 36rem;
 }
 
 
@@ -1145,4 +1145,15 @@ pre.astro-code {
   .loop-stages {
     flex-direction: column;
   }
+}
+
+/* Wide variant: title and note sit at opposite edges so a full-width band
+   reads as deliberate rather than as a short label in a stretched box. */
+.schematic-box.is-wide {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1.5rem;
+  min-height: 56px;
 }
