@@ -17,6 +17,16 @@ faqs:
     answer: "If you already run Postgres and your corpus is in the low millions of chunks, pgvector is a legitimate production choice - you get vector search, HNSW indexing, and transactional consistency with the rest of your data in one system. I reach for a dedicated vector database (Pinecone, Weaviate) when I need managed hybrid search, multi-tenant namespace isolation at scale, or query volume that would make me babysit a Postgres instance full-time."
   - question: "How much does a production RAG system cost to run?"
     answer: "The three cost centers are embedding generation (usually a rounding error, paid once per document unless you re-chunk), vector storage/query (scales with corpus size and QPS, varies a lot by vendor and index type), and the LLM generation call, which is almost always the dominant cost because you're paying for every retrieved chunk as input tokens on every single query. Reranking and trimming context aggressively is a cost lever as much as a quality lever."
+  - question: "Is RAG still relevant now that models have million-token context windows?"
+    answer: "Yes, for anything beyond a small static corpus. Long context does not remove the three reasons retrieval exists: you pay input-token pricing on every token of every query, model attention is not uniform across a long window (the 'lost in the middle' effect), and stuffing a corpus gives you no citations to point at. What has changed is that retrieval is increasingly a tool an agent chooses to call - agentic RAG - rather than a fixed pipeline stage. The underlying chunking, hybrid search and reranking work is the same either way."
+  - question: "What is the difference between RAG and MCP?"
+    answer: "They operate at different layers and are not alternatives. RAG is a pattern for grounding a model's answer in retrieved data. MCP (Model Context Protocol) is a transport standard for how a model client connects to tools and data sources. You can build RAG with no MCP at all, or expose your retrieval function as an MCP server so several clients share one retrieval backend. MCP changes who can reach your retriever; it does not change how retrieval works."
+  - question: "Is ChatGPT a RAG model?"
+    answer: "Not inherently. A base LLM is not a RAG system. But ChatGPT's browsing and file-upload features do implement the RAG pattern - they retrieve external content at query time and put it in context before generating. So the product uses retrieval-augmented generation as one of its features; the underlying model is not itself a RAG model."
+  - question: "What are the four levels of RAG?"
+    answer: "The common maturity ladder is naive RAG (chunk, embed, top-k retrieve, stuff the prompt), advanced RAG (query rewriting, metadata filtering, hybrid search, reranking), modular RAG (retrieval as a swappable component with routing between indexes or strategies), and agentic RAG (retrieval as a tool an agent decides when and how to call). Gao et al.'s 2023 survey formalises the first three; agentic RAG is the practice-driven fourth. Most failed RAG projects I review built level one and concluded the pattern doesn't work."
+  - question: "Can a RAG system be attacked through its own documents?"
+    answer: "Yes, and it is the RAG-specific risk teams most often miss. If anything that can be influenced from outside reaches your index - customer-written tickets, scraped pages, shared documents - an attacker can plant text engineered to be retrieved and then obeyed by the model. OWASP covers this as prompt injection and data poisoning in its GenAI Top 10. Defend it by structuring prompts so retrieved text is clearly data rather than instructions, restricting which sources can write into the index, and requiring a separate authorization check before any retrieved content triggers a privileged action."
   - question: "How do I evaluate whether my RAG system is actually working?"
     answer: "Separate retrieval evaluation from generation evaluation. For retrieval, measure recall@k and precision@k against a labeled set of query-to-relevant-chunk pairs - did the right chunk even make it into context? For generation, use an LLM-as-judge or human review to score faithfulness (is the answer supported by the retrieved context) and answer relevancy separately, because a model can be perfectly faithful to irrelevant context and still give a useless answer."
 ---
@@ -39,6 +49,36 @@ A few concrete reasons RAG earns its complexity over just prompting a bigger mod
 - **Reduced (not eliminated) hallucination.** Grounding the model in retrieved text measurably cuts down on fabrication versus asking it to answer from parametric memory alone, though it does not make hallucination impossible - the model can still misread or overgeneralize from what it retrieved.
 
 None of that means RAG is free. It adds a retrieval subsystem with its own failure modes, its own latency budget, and its own evaluation surface, which I'll get into below.
+
+## RAG vs. Fine-Tuning vs. Prompt Engineering vs. Long Context
+
+"Should we use RAG or fine-tune?" is the single most common question I get on a first call, and it's usually a false binary. There are four ways to get an LLM to behave correctly on your domain, they solve different problems, and production systems routinely use more than one.
+
+<div class="table-scroll">
+
+| Approach | What it changes | Update cost | Best for | Breaks down when |
+|---|---|---|---|---|
+| **Prompt engineering** | The instructions and examples in context | Instant, free | Behaviour, format, tone; small fixed reference material | The knowledge needed exceeds what you can paste in |
+| **RAG** | What the model *sees* at inference time | Seconds - re-index one document | Answering over a large, changing body of your own facts, with citations | Facts needed are tiny and static, or change second-to-second |
+| **Fine-tuning** | The model's weights | Hours to days, plus a retraining pipeline | Consistent output format, domain tone, latency/cost via a smaller model | You're trying to inject *facts* - this is the classic misuse |
+| **Long context** | Nothing; you just paste everything | Instant | Corpora small enough to fit, where simplicity wins | Cost per query, and accuracy degradation as context grows |
+
+</div>
+
+The rule I actually apply: **fine-tuning changes how a model behaves, RAG changes what it knows about.** If your complaint is "it doesn't know our Q3 pricing," that is never a fine-tuning problem. If your complaint is "it won't stop writing in bullet points," that is never a retrieval problem. Meta's own [guidance on fine-tuning Llama models](https://github.com/meta-llama/llama-cookbook/blob/main/getting-started/finetuning/README.md) makes the same split - fine-tuning is framed around adapting behaviour and domain style, with retrieval as the tool for external knowledge.
+
+On cost, the comparison is less about headline numbers than about *shape*. Fine-tuning is a large up-front cost plus a recurring retraining cost every time your knowledge changes, and it buys you cheaper inference (shorter prompts, possibly a smaller model). RAG is a near-zero setup cost plus a permanent per-query tax, because every retrieved chunk is billed as input tokens on every single request. If your corpus changes weekly, RAG wins on total cost without it being close. If your corpus is frozen and your query volume is enormous, that calculus can genuinely flip.
+
+### The Four Levels of RAG Maturity
+
+Gao et al.'s survey [*Retrieval-Augmented Generation for Large Language Models*](https://arxiv.org/abs/2312.10997) organises the field into three paradigms, and practice has since added a fourth. This is a useful ladder for figuring out where a given system actually sits:
+
+1. **Naive RAG** - chunk, embed, retrieve top-k by cosine similarity, stuff into the prompt. This is the tutorial version, and it's where most stalled projects are stuck.
+2. **Advanced RAG** - adds pre-retrieval and post-retrieval steps: query rewriting, metadata filtering, hybrid search, reranking. Everything in the architecture section above lives here, and it's where the bulk of real quality gains come from.
+3. **Modular RAG** - retrieval becomes a swappable component in a larger pipeline, with routing between multiple indexes or search strategies depending on the query.
+4. **Agentic RAG** - the retrieval step is no longer a fixed pipeline stage but a *tool* an agent decides to call, possibly several times, reformulating its query between attempts.
+
+Most teams who tell me "RAG didn't work for us" built level 1 and concluded the pattern was broken. It usually wasn't.
 
 ## RAG Architecture: From Query to Grounded Answer
 
@@ -203,7 +243,9 @@ If your RAG pipeline is one tool among several that an autonomous agent calls - 
 
 **Latency.** A naive RAG pipeline chains embed query → vector search → rerank → LLM generation sequentially, and each hop adds real wall-clock time - a reranking call over 20-30 candidates is not free. For a chat UI, users tolerate a second or two before the first token streams. For a voice AI agent, that same latency chain is often the difference between a usable product and one that feels broken, because there's no scrollback to hide behind while the user waits in silence - I go into the specific latency budgeting for that case in the [voice AI agents guide](/guides/voice-ai-agents). Caching embeddings for repeated queries and running retrieval and any non-dependent setup work in parallel are the first two latency levers I reach for.
 
-**Security.** The retrieval layer is a new place your access-control model has to be enforced correctly, and it's easy to get wrong because it doesn't look like a typical authorization boundary. If a vector store is queried without row-level filtering by tenant or user permissions, RAG will happily retrieve - and the LLM will happily surface - content the requesting user was never supposed to see. This isn't a hypothetical: it's the single most common security defect I review for in client RAG systems, and it's caught by testing retrieval directly with adversarial queries scoped to a low-permission user, not by testing the chat UI.
+**Security: access control.** The retrieval layer is a new place your access-control model has to be enforced correctly, and it's easy to get wrong because it doesn't look like a typical authorization boundary. If a vector store is queried without row-level filtering by tenant or user permissions, RAG will happily retrieve - and the LLM will happily surface - content the requesting user was never supposed to see. This isn't a hypothetical: it's the single most common security defect I review for in client RAG systems, and it's caught by testing retrieval directly with adversarial queries scoped to a low-permission user, not by testing the chat UI.
+
+**Security: retrieval poisoning and indirect prompt injection.** The second RAG-specific risk is that your index is an *untrusted input channel*. If anything that reaches your corpus can be influenced from outside - a support ticket a customer wrote, a scraped web page, a shared document - then an attacker can plant text designed to be retrieved and obeyed. The retrieved chunk arrives in the prompt looking exactly like your own trusted documentation, and the model has no reliable way to tell the difference. OWASP tracks this pair as [LLM01: Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/) and [LLM04: Data and Model Poisoning](https://genai.owasp.org/llmrisk/llm042025-data-and-model-poisoning/) in its GenAI Top 10. The mitigations that actually help are unglamorous: treat retrieved text as data rather than instructions in your prompt structure, restrict which sources can write into the index, and never let a retrieved chunk trigger a privileged action without a separate authorization check.
 
 ## Evaluating a RAG System (Not Just the LLM)
 
@@ -220,6 +262,26 @@ For the generation half, once you know the right context was retrieved, score th
 - **Answer relevancy**: does the answer actually address the user's question, even if it's faithful to the context it was given?
 
 I go deeper on building this kind of eval harness - labeled datasets, LLM-as-judge scoring, regression testing across model or prompt changes - in the [LLM evaluation guide](/guides/llm-evaluation), since the discipline is the same whether you're evaluating a RAG pipeline or any other LLM-backed feature. The RAG-specific addition is that you must evaluate retrieval and generation as two separate systems with two separate metrics, because a perfect retriever feeding a sloppy generator, and a sloppy retriever feeding a careful generator, produce equally bad end-to-end answers for completely different reasons - and only separate metrics tell you which one to fix.
+
+## Is RAG Still Relevant? Agentic RAG and Million-Token Context Windows
+
+This comes up constantly now that frontier models advertise context windows in the hundreds of thousands to a million tokens: if you can just paste the whole corpus in, why maintain a retrieval pipeline at all?
+
+For small, static corpora, you often shouldn't - I say exactly that in the section below on when to skip RAG. But "just use long context" fails for three concrete reasons at any real scale:
+
+- **Attention is not uniform across the window.** Liu et al.'s [*Lost in the Middle*](https://arxiv.org/abs/2307.03172) showed that model performance is highest when relevant information sits at the very beginning or very end of the input context and degrades measurably when it's buried in the middle - and that this holds even for models explicitly built for long contexts. Filling a million-token window doesn't mean the model reads a million tokens equally well.
+- **You pay for every token, every query.** A million-token prompt billed on every request is a fundamentally different cost structure from retrieving six relevant chunks. Prompt caching softens this considerably for a stable corpus, but it doesn't make it free.
+- **You lose citations.** Retrieval gives you a defensible answer to "where did this come from?" Stuffing the corpus gives you a model assertion and nothing to point at.
+
+What *has* genuinely changed is the shape of the retrieval step. **Agentic RAG** - level 4 above - lets the model decide whether to retrieve at all, issue several reformulated searches, and judge whether what came back is sufficient before answering. In practice this means a question like "how did our refund policy change between versions?" can trigger two targeted retrievals rather than one blurry one. The retrieval, chunking, hybrid search and reranking engineering underneath is identical; what changes is who drives it. I cover that control loop in the [agents guide](/guides/ai-agents).
+
+So: retrieval as an *architecture* is more relevant than ever. Retrieval as a *rigid pipeline stage* is what's being replaced.
+
+## RAG vs. MCP: Different Layers, Not Competitors
+
+Because both acronyms show up in the same conversations, people ask which one to pick. They aren't alternatives. RAG is a **pattern** for grounding answers in retrieved data. The Model Context Protocol is a **transport standard** for how a model client connects to tools and data sources.
+
+Concretely: you can implement RAG with no MCP anywhere in the system (a function in your app queries pgvector directly - that's every code sample in this guide). You can also expose that exact retrieval function as an MCP server, so a desktop AI client, your IDE, and an internal agent all query one retrieval backend instead of three reimplementations of it. The retrieval engineering is unchanged either way; MCP only decides who can reach it and how. See the [MCP guide](/guides/mcp) for when that indirection earns its keep.
 
 ## When Not to Use RAG
 

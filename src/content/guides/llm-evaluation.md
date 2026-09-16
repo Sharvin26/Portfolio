@@ -7,6 +7,14 @@ primaryKeyword: "llm evaluation"
 category: "Evaluation"
 relatedSlugs: ["rag", "mcp", "ai-agents", "voice-ai-agents"]
 faqs:
+  - question: "What is the difference between LLM evals and benchmarks?"
+    answer: "A benchmark is a public, fixed dataset used to compare models against each other - it answers 'which model is generally more capable'. An eval is a private test suite built from your own data that answers 'did my change make my product better'. Benchmarks suffer from contamination, since models may have trained on the test set, and they say nothing about your prompts, retrieval or tools. In practice benchmarks inform which model you try first, and evals decide whether you ship it. I have had projects where a lower-ranked model won the eval decisively because it followed formatting instructions more reliably."
+  - question: "What are the main LLM evaluation metrics?"
+    answer: "They fall into three groups. Deterministic metrics are computed in code - exact match, JSON schema validity, citation presence, latency, cost - and you should push as much of your suite into this group as possible. Reference-based metrics compare against a known-correct answer. Reference-free metrics score a property with no gold answer, which is where LLM-as-a-judge lives, along with the four RAG metrics: context precision and context recall for retrieval, faithfulness and answer relevancy for generation. Agents add trajectory metrics such as tool-selection accuracy and recovery rate after a failed call."
+  - question: "What is an LLM evaluation rubric and how do I write one?"
+    answer: "A rubric is the scoring criteria a judge - human or model - applies to an output, and when you use LLM-as-a-judge the rubric is your measurement instrument. Use binary or three-point scales rather than 1-10, because both humans and models cluster in the middle of wide scales. Ask about one dimension per judge call instead of requesting an overall score. Anchor each point with a concrete example from your own data, and phrase criteria as observable properties ('contains a claim not present in the provided context') rather than judgements ('is inaccurate'). Then validate the judge against roughly 50 hand-labelled examples before trusting it at scale."
+  - question: "What should I capture for LLM observability?"
+    answer: "Five things on every production request: the full trace of model calls, retrieval and tool executions with their nesting; the complete assembled prompt and response including retrieved context as it actually arrived; cost and token accounting per step attributed to a user or tenant; latency broken down per stage rather than just end-to-end; and quality signals from online scorers, explicit feedback and implicit signals like regeneration or escalation. The last one is what closes the loop - a badly scored production request should land in your golden dataset in one click, or your dataset will stop growing exactly when it starts to matter."
   - question: "What is LLM evaluation and why does it matter?"
     answer: "LLM evaluation is the process of systematically scoring an AI system's outputs against a dataset of representative cases, so you can tell whether a change to a prompt, model, or retrieval pipeline made things better or worse. It matters because LLMs are non-deterministic and prompt changes have non-local effects - a tweak that fixes one case can silently break five others. Without evals, teams find out about regressions from user complaints instead of a test run."
   - question: "What's the difference between offline and online LLM evaluation?"
@@ -28,6 +36,67 @@ LLM evaluation is just testing, applied to a system whose outputs aren't determi
 The eval mistake I see most often, across RAG chatbots, support agents, and internal copilots alike, is treating prompt and model changes like they're free to make. A team ships a feature, it works well enough in the demo, and from then on every change to the system prompt, every model upgrade, every tweak to the retrieval pipeline gets judged by "I tried it a few times and it looked fine." That works until it doesn't - usually right after a model provider ships a new version, or a well-intentioned prompt edit fixes one complaint and quietly breaks a dozen other cases nobody re-checked. Nobody notices for days, because there's no test suite to notice for them. In traditional software this would be unthinkable - nobody ships a refactor without running the tests - but because LLM output is fuzzy, teams convince themselves fuzzy testing isn't real testing. It is. It just needs different tools than `assert equals`.
 
 The architecture diagram above shows the loop this guide is built around: a golden dataset runs through your system under test, produces outputs, those outputs get scored by scorers or judges, and the results roll up into a report that feeds the next iteration - including growing the dataset itself. Everything below is detail on each stage of that loop.
+
+## LLM Evals vs. Benchmarks: Not the Same Thing
+
+This distinction causes more confused conversations than any other in evaluation, because both activities produce a number that looks like a score.
+
+<div class="table-scroll">
+
+| | **Benchmarks** | **Evals** |
+|---|---|---|
+| Data | Public, fixed, shared across the industry | Private, drawn from your own traffic |
+| Question answered | "Which model is generally more capable?" | "Did my change make *my product* better?" |
+| Used for | Model selection, research comparison | Release gating, regression detection |
+| Lifespan | Static, until the benchmark saturates | Grows continuously as you find new failures |
+| Main weakness | Contamination - models may have trained on the test set | Only as good as the dataset you bothered to build |
+
+</div>
+
+A benchmark tells you something about a *model*. An eval tells you something about a *system* - your prompts, your retrieval, your tools, your model, wired together. A model that tops a public leaderboard can still be worse for your use case, and that's not a paradox; it's the expected outcome when a general capability measure meets a specific application.
+
+The practical consequence: **benchmarks inform which model you try first, and evals decide whether you ship it.** I've had client projects where a lower-ranked model won the eval decisively because it followed formatting instructions more reliably, which mattered far more for that product than the reasoning gap the leaderboard was measuring. Choosing a model on benchmark position alone is how teams end up with an expensive upgrade that made their product worse.
+
+## LLM Evaluation Metrics: What to Actually Measure
+
+"LLM evaluation metrics" gets treated as one list, but the metrics fall into three groups that behave very differently, and mixing them into a single average is how teams end up with a number that moves for reasons nobody can explain.
+
+**Deterministic metrics** — computed in code, no model involved. Exact match, JSON schema validity, regex conformance, "did it cite a source," "is it under the length limit," latency, token count, cost per request. These are cheap, instant, and perfectly reproducible. Push as much of your suite into this category as you possibly can; teams consistently reach for a judge model when a three-line assertion would have done the job.
+
+**Reference-based metrics** — compare an output against a known-correct answer. Semantic similarity against a gold response, or classic n-gram overlap measures like BLEU and ROUGE, which are largely obsolete for open-ended generation but still fine when the output space is genuinely narrow. These require you to have written the right answer down, which is the expensive part.
+
+**Reference-free / judged metrics** — score a property of the output with no gold answer available. This is where LLM-as-a-judge lives, and where the RAG-specific metrics sit:
+
+<div class="table-scroll">
+
+| Metric | Question it answers | Which half it tests |
+|---|---|---|
+| **Context precision** | Of the chunks retrieved, how many were actually relevant? | Retrieval |
+| **Context recall** | Of the chunks that mattered, how many were retrieved? | Retrieval |
+| **Faithfulness / groundedness** | Is every claim in the answer supported by the retrieved context? | Generation |
+| **Answer relevancy** | Does the answer address the question that was asked? | Generation |
+
+</div>
+
+Splitting those four is the whole reason RAG evaluation works. An answer can be perfectly faithful to context that was completely irrelevant, and it will score well on faithfulness while being useless. The open-source [RAGAS](https://github.com/explodinggradients/ragas) framework formalises this split if you'd rather adopt an existing metric implementation than write your own.
+
+For agents, add **trajectory metrics** on top: tool-selection accuracy, step count versus an optimal path, recovery rate after a failed tool call, and how often the run terminates without an answer. A final-answer-only score rewards an agent that stumbled to the right result through six wrong turns.
+
+The metric that overrides all of the above is whichever one correlates with a real user outcome. If your faithfulness score climbs while support escalations stay flat, you improved a number, not a product.
+
+### Designing an Evaluation Rubric That Judges Can Actually Apply
+
+If you're using LLM-as-a-judge, the rubric *is* the measurement instrument, and a vague rubric produces noise dressed as data. "Rate the helpfulness of this answer from 1 to 10" is close to worthless - you'll get 7s and 8s forever, and two runs on the same input will disagree.
+
+What works, consistently:
+
+- **Binary or three-point scales, not 1-10.** Humans and models both cluster in the middle of wide scales. "Pass / fail" or "correct / partially correct / incorrect" produces far more stable signal.
+- **One dimension per judge call.** Ask separately about faithfulness, tone, and format. A single prompt asking for an overall score silently averages dimensions you needed to see move independently.
+- **Anchor every point on the scale with a concrete example.** Show the judge what a failing answer looks like and what a passing one looks like, drawn from your own data.
+- **State the criteria as observable properties**, not as feelings. "Contains a claim not present in the provided context" is checkable; "is inaccurate" is an invitation to guess.
+- **Validate the judge against humans before trusting it.** Score 50 examples by hand, run the judge on the same 50, and measure agreement. If the judge doesn't track your own labels, fix the rubric before you scale it to thousands of cases - otherwise you're automating a measurement you never verified.
+
+Zheng et al.'s [*Judging LLM-as-a-Judge*](https://arxiv.org/abs/2306.05685) is the reference worth reading here: it documents both that strong judge models can reach agreement with human preferences comparable to the agreement between two humans, and the specific biases - position, verbosity, self-preference - that make an unvalidated judge untrustworthy.
 
 ## The Architecture of an LLM Evaluation Framework
 
@@ -195,6 +264,18 @@ Running evals costs real money and real time once you're doing it continuously r
 Evaluation and observability answer two different questions that people often conflate. Evaluation asks "is this good, according to a rubric I defined in advance?" Observability asks "what actually happened in this specific production request?" - the full trace of prompts, retrieved context, tool calls, token counts, and latency for a real interaction. You need both, and increasingly the tooling treats them as one pipeline rather than two: a traced production request becomes a new eval case the moment it's flagged as a failure, and eval scorers are frequently the same code running online against sampled production traces.
 
 This is exactly what the OpenTelemetry project has been formalizing with its GenAI semantic conventions - a standard schema for spans, metrics, and events across model calls, tool executions, and agent runs, so that llm observability and evaluation tooling from different vendors can actually interoperate on the same trace data instead of each requiring its own instrumentation ([OpenTelemetry, "OpenTelemetry for Generative AI"](https://opentelemetry.io/blog/2024/otel-generative-ai/)). Practically, if you're already instrumenting your system for tracing, wire your eval harness to consume the same trace format - it means a production failure can be replayed straight into your eval dataset without hand-transcribing it.
+
+### What to Instrument: The Pillars of LLM Observability
+
+Traditional observability has metrics, logs and traces. An LLM system needs those plus a few things that don't exist in ordinary services. What I make sure is captured on every production request:
+
+1. **The full trace** — the span tree for one request: model calls, retrieval, tool executions, and the nesting between them. Without this, debugging a multi-step failure is guesswork.
+2. **The complete prompt and response** — including the retrieved context and tool results as they were actually assembled, not a template. Most "the model is broken" reports turn out to be "the prompt didn't contain what you assumed it contained."
+3. **Cost and token accounting** — input, output and cached tokens per step, attributed to a user or tenant. This is what makes a runaway agent loop visible as an anomaly rather than a surprise invoice.
+4. **Latency per stage** — not just end-to-end. A 4-second response tells you nothing; "3.2s of it was reranking" tells you what to fix.
+5. **Quality signals** — online scorer output, explicit user feedback, and implicit signals like regeneration, abandonment or escalation to a human.
+
+The fifth is what closes the loop back to evaluation: a traced request that scores badly or gets thumbs-downed should land in your golden dataset with one click. If adding a production failure to your eval set requires hand-transcribing a prompt, it will not happen, and your dataset will stop growing exactly when it starts mattering.
 
 ## How Evaluation Differs Across System Types
 

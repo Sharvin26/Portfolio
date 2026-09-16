@@ -9,6 +9,14 @@ relatedSlugs: ["rag", "llm-evaluation", "ai-agents", "voice-ai-agents"]
 faqs:
   - question: "What is the Model Context Protocol (MCP) in simple terms?"
     answer: "MCP is an open protocol, originally released by Anthropic, that standardizes how AI applications connect to external tools, data sources, and prompt templates. Instead of writing a custom integration for every combination of model and tool, you write one MCP server for your tool and any MCP-compatible host - Claude Desktop, Claude Code, an IDE, a custom agent - can connect to it."
+  - question: "What is the difference between MCP and a regular API?"
+    answer: "MCP does not replace your API - an MCP server calls it. What MCP replaces is the per-application integration code. With direct APIs, connecting 3 AI applications to 5 systems means writing and maintaining 15 connectors, and the surface grows multiplicatively as you add either. With MCP it is 5 servers plus 3 protocol-speaking clients, and a new system is one server every client can use immediately. MCP is a distribution mechanism for tools, not a data-access layer."
+  - question: "Are MCP servers a security risk?"
+    answer: "An MCP server is a program you let a language model invoke, often with your credentials and frequently written by someone else, so yes - it deserves the scrutiny you would give any dependency that executes code. The MCP-specific risks worth checking are confused-deputy access (the server acting on privileged credentials without checking the calling user's entitlement), token passthrough (forwarding a token that was not issued for your server, which the spec prohibits), tool poisoning and rug pulls (tool descriptions are attacker-controlled text that goes straight into the model's context and can change after you approved them), and prompt injection through tool results. Run every server with the narrowest credential that works and keep human approval in the loop for destructive operations."
+  - question: "What is the difference between MCP and RAG?"
+    answer: "They sit at different layers and are not alternatives. RAG is a pattern for grounding a model's answer in retrieved data; MCP is a transport standard for how a client reaches tools and data sources. You can build RAG with no MCP anywhere in the system, or expose your retriever as an MCP server so several clients share one backend. RAG decides what goes in the prompt; MCP decides how the client reaches the thing that produces it."
+  - question: "When is something better than MCP?"
+    answer: "When the tool has exactly one consumer. A weather function used only by your own chatbot needs a TypeScript function, not a server process, a transport and a discovery handshake. Direct SDK calls also win when latency is tight, since every MCP hop adds serialization and process-boundary overhead, and for deterministic repetitive automation where you do not want a model deciding anything. MCP earns its overhead on reuse, not on sophistication."
   - question: "How is MCP different from function calling or tool calling?"
     answer: "Function/tool calling is a model capability: the model emits structured arguments for a function you defined inline in your own code. MCP is a transport and discovery layer that sits on top of that capability, letting tools live in independent, reusable servers that any client can discover and call at runtime instead of being hardcoded into one application."
   - question: "Should I use stdio or Streamable HTTP for my MCP server's transport?"
@@ -115,6 +123,36 @@ That's the whole server. A handful of things worth calling out from doing this f
 
 Once this is wired into an actual agent loop rather than a chat client, you're in the same territory I cover in the [guide to building AI agents](/guides/ai-agents) - MCP gives the agent its tool inventory, but the loop that decides which tool to call, when to stop, and how to recover from a bad call is still something you have to design.
 
+## MCP vs. API: The N×M Integration Problem
+
+The clearest way to understand why MCP exists is to count integrations.
+
+Say you have 3 AI applications - an internal chat tool, a coding agent, a support bot - and they each need to reach 5 systems: Postgres, GitHub, Slack, Jira, your billing service. With direct API integrations you write and maintain **15 connectors**, because each application needs its own client code, its own auth handling, and its own tool schemas for every system. Add a sixth system and you write three more. Add a fourth application and you write five more. This is the N×M problem, and it's why internal AI tooling tends to rot: the integration surface grows multiplicatively while the team stays the same size.
+
+MCP makes it **N+M**. You write 5 MCP servers, one per system, and each of the 3 applications speaks the protocol. The sixth system is one new server that all three applications can use immediately. The fourth application is zero new connectors.
+
+That's the entire pitch, and it's worth being precise about what it *isn't*:
+
+- **MCP is not a replacement for your API.** The MCP server calls your API. You still need the API, the auth, and the business logic underneath.
+- **MCP does not make a bad tool good.** A confusingly named tool with a vague description confuses a model the same way over a protocol as it does inline.
+- **MCP is not free.** You're adding a process boundary, a transport, a discovery handshake, and a config file to something that used to be a function call.
+
+The honest framing: MCP is a distribution mechanism. It's worth it exactly when a tool has more than one consumer, and it's overhead when it doesn't - which is the same test I apply to extracting any shared library.
+
+### Is MCP the same as tool calling?
+
+No, and the terms get muddled constantly - including in vendor material that should know better.
+
+**Tool calling** (or function calling) is a *model capability*: given a set of tool schemas in the request, the model emits structured JSON naming a tool and its arguments. That's it. It's a feature of the model API.
+
+**MCP** is a *protocol* for where those tool schemas come from and who executes the resulting call. An MCP client fetches tool definitions from a server at runtime, passes them to the model as ordinary tool schemas, and routes the model's chosen call back to that server for execution.
+
+So they operate at different layers and compose rather than compete: **MCP is built on top of tool calling, not instead of it.** A model connected to twelve MCP servers is still doing plain tool calling - it simply didn't have those twelve tools hard-coded into the application. If someone asks you to choose between them, the question is malformed.
+
+### MCP vs. RAG
+
+Another pairing that isn't a choice. [RAG](/guides/rag) is a pattern for grounding an answer in retrieved data. MCP is a transport for connecting a client to tools and data sources. You can run RAG with no MCP (a function queries your vector store directly), or expose retrieval as an MCP server so several clients share one retriever. RAG decides *what goes in the prompt*; MCP decides *how the client reaches the thing that produces it*.
+
 ## MCP vs. direct function calling: when NOT to use MCP
 
 This is the section I wish more MCP content included, because a lot of teams reach for it by default now and pay for complexity they didn't need.
@@ -134,6 +172,24 @@ Reach for MCP when:
 - You want the tool's ownership decoupled from the application calling it, so the team that owns the database can own the MCP server and ship changes independently of every consumer.
 
 I've made the call wrong in both directions: over-engineered a single-tenant tool as an MCP server because it felt like the "correct" architecture, and under-engineered a tool three different agents ended up needing, then had to retrofit it. The honest heuristic is reuse, not sophistication.
+
+## MCP Server Security: The Risks That Are Actually Specific to MCP
+
+"Are MCP servers a security risk?" is a fair question with an uncomfortable answer: an MCP server is a program you are giving a language model permission to invoke, often with your credentials, frequently written by someone else, and sometimes installed with a single line in a config file. That combination deserves more scrutiny than it usually gets.
+
+The protocol's own [security best practices](https://modelcontextprotocol.io/specification/draft/basic/security_best_practices) document the risks that are structural rather than incidental. The ones I check for on every review:
+
+**Confused deputy.** Your MCP server holds credentials that are more privileged than the user driving the model. If the server executes whatever the model asks without checking whether *this* user is entitled to *this* action, the server becomes a deputy that launders the model's request into privileged access. The fix is authorization at the server, per request, against the calling user's identity - never a blanket service credential that the model can steer.
+
+**Token passthrough.** Accepting a token that wasn't issued for your server and forwarding it upstream defeats audit trails and lets a token minted for one audience be replayed against another. The spec explicitly prohibits this. Validate that a token was issued *for you* before you act on it.
+
+**Tool poisoning and rug pulls.** Tool descriptions are attacker-controlled text that goes straight into the model's context. A malicious or compromised server can put instructions in a tool's description, and a server that behaved well at install time can change its tool definitions later - the model re-reads them every session and has no notion of "this changed since you approved it." Pin the servers you trust, review tool definitions as you'd review a dependency, and alert on changes to the tool list.
+
+**Prompt injection through tool results.** Everything an MCP server returns is untrusted input. A server that fetches web pages or reads shared documents is a direct conduit for instructions written by whoever controlled that content. Structure prompts so tool results are unmistakably data, and require an independent authorization check before any tool result triggers a privileged follow-up action.
+
+**Over-broad scopes.** The single most common real defect: a server exposing full read/write on a database because scoping it properly was tedious. The blast radius of an agent misfiring is exactly the permission set you handed its tools.
+
+The practical posture I recommend to clients: treat every third-party MCP server as an untrusted dependency with runtime code execution - because that is precisely what it is. Read the source of anything with write access, run it with the narrowest credential that works, log every invocation with the calling user attached, and keep human approval in the loop for destructive operations. OWASP's [GenAI Top 10](https://genai.owasp.org/llm-top-10/) lands on the same principles from the other direction: constrain privileges, treat model-adjacent input as hostile, and log enough to reconstruct what happened.
 
 ## Failure modes I've actually hit
 

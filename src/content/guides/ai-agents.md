@@ -11,6 +11,14 @@ faqs:
     answer: "A chatbot (in the simple sense) takes a message and returns a response - one LLM call, no independent decision-making about what to do next. An AI agent can decide to call a tool, look at what came back, and decide again, for as many steps as the task needs, before it answers. Many products marketed as chatbots are actually agents under the hood once they start calling tools in a loop."
   - question: "Do I need LangChain or a framework to build an AI agent?"
     answer: "No. The core of an agent is a loop around a single API call with tool definitions - maybe 60 lines of code, shown in this guide. Frameworks earn their keep when you need shared infrastructure across many agents (standardized tracing, retry policies, memory backends), not to make the first agent possible. I've shipped production agents with zero framework dependencies more often than not."
+  - question: "What are the 5 types of AI agents?"
+    answer: "The standard academic taxonomy from Russell and Norvig is simple reflex, model-based reflex, goal-based, utility-based, and learning agents. It is worth knowing because it is reprinted everywhere, but it predates LLMs and its boundaries blur when the reasoning component is a language model. Practically, almost every LLM agent shipping today is a goal-based agent, and it is not a learning agent in the classical sense unless you have built an explicit feedback and retraining loop. The distinction that actually drives engineering decisions is whether you or the model writes the control flow."
+  - question: "What is the difference between an AI agent and an AI assistant?"
+    answer: "An assistant acts once per human instruction - the human decides each next step. An agent decides its own next step and can run many of them before returning. The practical consequence is supervision: an assistant is useless without a human in the loop turn by turn, whereas an agent is supposed to run unattended, which is exactly why it needs step caps, tool permission scoping, and an evaluation suite that an assistant does not."
+  - question: "What are the four main types of agent memory?"
+    answer: "Working memory (the current run's message list and tool results), episodic memory (specific past events, such as what was tried and what happened), semantic memory (durable facts like user preferences and domain rules), and procedural memory (how to perform tasks, usually encoded in the system prompt and tool definitions). The split that matters most in practice is episodic versus semantic: current facts should be overwritten when they change, while past events should only ever accumulate. Storing both in one undifferentiated table produces an agent that either forgets current facts or relitigates old failures."
+  - question: "When should I use a workflow instead of an AI agent?"
+    answer: "Whenever the sequence of steps is predictable enough to write down. A workflow is testable, has bounded cost, and can be explained step by step after the fact - three things an agent gives up in exchange for handling open-ended tasks. I default clients to a workflow and make the case for an agent only when the task genuinely has an unpredictable shape, because the agent's flexibility is also the thing that makes it expensive, slow, and hard to debug."
   - question: "How much does running an AI agent cost compared to a single LLM call?"
     answer: "It depends entirely on step count, and that's the point - a single call has a fixed, predictable cost, while an agent's cost is a distribution with a tail you don't control unless you bound it. Every tool call round-trips the growing conversation history back through the model, so a 10-step agent isn't 10x one call, it's closer to 10x with each step paying for all the tokens before it. Cap max steps and watch your token usage in production; don't estimate from a demo run."
   - question: "Can an AI agent use multiple tools at once?"
@@ -53,6 +61,37 @@ Clients ask me this constantly, usually because they've read both terms in the s
 
 In practice, I treat "agentic AI" as the category you're operating in and "an AI agent" (or several) as the actual unit of work you scope, build, and evaluate. If a client says "let's do agentic AI" as the goal, my first follow-up is always: which specific agent, with which specific tools, doing which specific job - because "agentic AI" isn't something you deploy, it's something individual agents implement.
 
+## Agent vs. Assistant vs. Chatbot vs. Workflow
+
+Before the architecture, it's worth pinning down four terms that get used interchangeably in vendor material and mean genuinely different things in an engineering discussion:
+
+<div class="table-scroll">
+
+| | Who decides the next step | Can act on the world | Runs multiple steps | Typical failure |
+|---|---|---|---|---|
+| **Chatbot** | Nobody - one prompt, one reply | No | No | Says something wrong, confidently |
+| **AI assistant** | The human, each turn | Sometimes, one action per instruction | Only as the human drives it | Needs constant supervision to be useful |
+| **Workflow** | You, in code, in advance | Yes, via steps you wrote | Yes, on a fixed path | Hits a case the author didn't anticipate |
+| **AI agent** | The model, at runtime | Yes, tools of its choosing | Yes, until it decides to stop | Loops, burns budget, or confidently does the wrong thing |
+
+</div>
+
+The row that matters commercially is the last two. A workflow and an agent can look identical from the outside - both call tools, both take several steps, both produce an answer. The difference is who wrote the control flow. That single distinction determines whether you can unit-test the path, predict the cost of a run, and explain to a regulator why the system did what it did. I default clients to workflows and make them justify the upgrade to an agent, not the other way round.
+
+## What Are the 5 Types of AI Agents?
+
+Search for agent taxonomies and you'll find the five-type classification from Russell and Norvig's *Artificial Intelligence: A Modern Approach* everywhere, usually reprinted without comment. It predates LLMs by decades and it's still the standard academic framing, so it's worth knowing - but it's worth knowing what it does and doesn't tell you about the thing you're about to build:
+
+1. **Simple reflex agents** act only on the current percept, with condition-action rules. No memory, no model of the world. A thermostat.
+2. **Model-based reflex agents** keep internal state to track parts of the world they can't currently see.
+3. **Goal-based agents** choose actions by reasoning about which ones move them toward an explicit goal.
+4. **Utility-based agents** go further and choose between competing goals by maximising a utility measure - useful when outcomes are graded rather than pass/fail.
+5. **Learning agents** improve their own behaviour over time from feedback.
+
+Here's the part the reprints leave out: **almost every LLM agent shipping today is a goal-based agent**, and the taxonomy's boundaries blur badly when the "reasoning" is a language model. An LLM agent has implicit world knowledge in its weights (model-based), pursues a stated objective (goal-based), and can weigh tradeoffs when you ask it to (utility-ish) - but it does not learn from its own production runs unless you build an explicit feedback and fine-tuning loop, so it is *not* a learning agent in the classical sense, no matter how adaptive it feels in conversation.
+
+I've never once scoped a client project by picking a number from this list. The taxonomy that actually drives engineering decisions is the one in the table above - who writes the control flow - plus how many tools the agent can reach and how much damage the worst one can do.
+
 ## Architecture: The Control Loop, Tool Calling, and Planning
 
 ### The control loop
@@ -76,6 +115,25 @@ Memory is the part of agent architecture that gets the least precise treatment i
 **Long-term memory** is state that needs to survive across separate runs or sessions - user preferences, facts learned in a previous conversation, a running project state. This has to be handled explicitly, because the API is stateless between requests. Options in rough order of complexity: append summarized facts to a system prompt on each new run; store structured facts in a database and retrieve relevant ones per-run (functionally a [RAG](/guides/rag) pipeline over the agent's own memory); or use a dedicated memory tool that lets the model read and write files it manages itself, which is the pattern Anthropic's memory tool implements directly in the API.
 
 The mistake I see most often is conflating the two: "the agent forgot something from ten steps ago" is a scratchpad/context-management problem (clear stale tool results, summarize, or compact), while "the agent forgot something from last week" is a persistence problem (you need actual storage). They need different fixes, and building a database-backed memory system to solve a within-run context problem is wasted effort.
+
+### The Four Types of Agent Memory
+
+The short-term/long-term split above is the one that governs engineering decisions, but the cognitive-science-derived four-way taxonomy shows up throughout the agent-memory literature and tooling, so here's how it maps onto things you actually build:
+
+<div class="table-scroll">
+
+| Type | What it holds | Where it lives in practice |
+|---|---|---|
+| **Working** | The current run's reasoning and tool results | The message list you resend each turn - the scratchpad above |
+| **Episodic** | Specific past events: what was tried, what happened | A log or database of prior runs, retrieved by similarity or recency |
+| **Semantic** | Durable facts: user preferences, domain rules, entity data | A vector store or plain relational table - effectively [RAG](/guides/rag) over the agent's own knowledge |
+| **Procedural** | How to do things: skills, workflows, learned conventions | Usually the system prompt and tool definitions; occasionally files the agent maintains itself |
+
+</div>
+
+The distinction that earns its keep here is **episodic vs. semantic**. "The customer's plan is Enterprise" is semantic - one current fact, overwrite it when it changes. "We tried the refund flow on Tuesday and it failed with a 409" is episodic - an event with a timestamp that stays true forever and should never be overwritten, only accumulated. Teams that store both in one undifferentiated "memory" table end up with an agent that either forgets current facts or relitigates old failures, and it is genuinely hard to debug after the fact.
+
+Procedural memory is the one I'd caution against over-engineering. In nearly every production system I've built, "procedural memory" is a well-maintained system prompt, and framing it as a memory subsystem invites complexity that buys nothing.
 
 ### Planning strategies: ReAct and beyond
 
@@ -215,6 +273,22 @@ The parts worth calling out because they're easy to skip in a rushed prototype: 
 **Prompt injection via tool outputs.** Tool results go straight back into the model's context as if they were trusted input - if a tool fetches a web page, a document, or user-generated content, anything embedded in that content can attempt to redirect the agent ("ignore previous instructions and instead..."). I treat every tool output as untrusted exactly the way I'd treat user input to a web app: never let a tool result alone authorize a higher-privilege action, and for anything consequential, require confirmation that doesn't originate from tool content.
 
 **The agent confidently doing the wrong thing.** This is the failure I see most often in client post-mortems, and it's hardest to catch by eyeballing outputs, because a wrong answer from a broken agent often *reads* just as fluent as a correct one. There's no shortcut around this other than a real evaluation suite before you trust an agent's output - see the evaluation section below and my [LLM evaluation guide](/guides/llm-evaluation). Guardrails (output validation, a second-pass check, human review on high-stakes actions) catch what evals miss in production, but evals are what tell you the failure rate in the first place.
+
+## What Does an AI Agent Actually Cost to Run?
+
+This is the question that decides whether a project ships, and it's chronically under-answered because the arithmetic is unintuitive. The key mechanic: **an agent re-sends its entire accumulated context on every step.** Your message list on step 8 contains the original request plus seven rounds of tool calls and results.
+
+So a single LLM call bills roughly one prompt. An eight-step agent bills something closer to the *sum* of a growing prompt eight times over - the tokens compound, they don't add linearly. An agent run is routinely one to two orders of magnitude more expensive than the single call it replaced, and the variance between a clean run and a confused one is enormous, because a confused agent takes more steps with a longer history on each one.
+
+The levers I actually pull, in the order I reach for them:
+
+- **Cap the step count.** A hard maximum is a cost control and a safety control at once. Most tasks that can't finish in ten steps aren't going to finish in thirty; they're looping.
+- **Prune the scratchpad.** Old tool results are usually the largest thing in context and the least useful. Dropping or summarising results older than a few steps cuts cost without measurably hurting quality on most tasks.
+- **Cache the stable prefix.** System prompt and tool definitions are identical on every step of every run. Prompt caching turns the most repetitive part of the bill into a fraction of its uncached cost - this is the single highest-leverage change on a chatty agent.
+- **Route by difficulty.** Not every step needs your most capable model. Tool-argument formatting and simple extraction steps run fine on a smaller, cheaper model; reserve the frontier model for the planning steps.
+- **Ask whether it should be a workflow.** The cheapest agent is the one you didn't build. If the path is actually predictable, hard-coding it removes the token cost of having the model rediscover it on every run.
+
+Budget for the tail, not the median. Alert on cost per run, not just cost per month - a runaway loop shows up as one run costing fifty times the median long before it shows up on the monthly invoice.
 
 ## Production Considerations
 
