@@ -1,0 +1,60 @@
+---
+import Diagram from "../Diagram.astro";
+
+const box = { fill: "oklch(0.205 0.007 62)", stroke: "oklch(0.37 0.009 66)" };
+const text = "oklch(0.97 0.004 90)";
+const muted = "oklch(0.56 0.01 70)";
+const accent = "oklch(0.77 0.16 71)";
+---
+<Diagram minWidth={500} caption="An agent loop: plan a step, call a tool, observe the result, and decide whether to loop again or respond.">
+  <svg viewBox="0 0 500 520" role="img" aria-labelledby="agent-diagram-title agent-diagram-desc" class="w-full h-auto max-w-md mx-auto">
+    <title id="agent-diagram-title">AI agent control loop</title>
+    <desc id="agent-diagram-desc">
+      A user request enters a plan step, which decides on a tool call. The tool executes and
+      returns an observation, which feeds back into planning. The loop repeats until the agent
+      decides it has enough information to respond to the user.
+    </desc>
+    <defs>
+      <marker id="agent-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8 Z" fill={accent} />
+      </marker>
+    </defs>
+
+    <rect x="170" y="10" width="160" height="55" fill={box.fill} stroke={box.stroke} stroke-width="1.5" />
+    <text x="250" y="43" text-anchor="middle" font-size="13" font-family="monospace" fill={text}>User Request</text>
+
+    <line x1="250" y1="65" x2="250" y2="105" stroke={accent} stroke-width="2" marker-end="url(#agent-arrow)" />
+
+    <rect x="170" y="110" width="160" height="55" fill={box.fill} stroke={box.stroke} stroke-width="1.5" />
+    <text x="250" y="143" text-anchor="middle" font-size="13" font-family="monospace" fill={text}>Plan Next Step</text>
+
+    <line x1="330" y1="137" x2="400" y2="137" stroke={accent} stroke-width="2" marker-end="url(#agent-arrow)" />
+    <line x1="400" y1="137" x2="400" y2="330" stroke={accent} stroke-width="2" />
+    <line x1="400" y1="330" x2="330" y2="330" stroke={accent} stroke-width="2" marker-end="url(#agent-arrow)" />
+
+    <rect x="170" y="305" width="160" height="55" fill={box.fill} stroke={box.stroke} stroke-width="1.5" />
+    <text x="250" y="338" text-anchor="middle" font-size="13" font-family="monospace" fill={text}>Call a Tool</text>
+
+    <line x1="250" y1="360" x2="250" y2="400" stroke={accent} stroke-width="2" marker-end="url(#agent-arrow)" />
+
+    <rect x="170" y="405" width="160" height="55" fill={box.fill} stroke={box.stroke} stroke-width="1.5" />
+    <text x="250" y="438" text-anchor="middle" font-size="13" font-family="monospace" fill={text}>Observe Result</text>
+
+    <line x1="170" y1="432" x2="100" y2="432" stroke={accent} stroke-width="2" />
+    <line x1="100" y1="432" x2="100" y2="137" stroke={accent} stroke-width="2" />
+    <line x1="100" y1="137" x2="165" y2="137" stroke={accent} stroke-width="2" marker-end="url(#agent-arrow)" />
+
+    <text x="415" y="230" font-size="11" font-family="monospace" fill={muted} transform="rotate(90 415 230)">
+      tool execution
+    </text>
+    <text x="60" y="280" font-size="11" font-family="monospace" fill={accent} transform="rotate(-90 60 280)">
+      loop until done
+    </text>
+
+    <line x1="330" y1="137" x2="415" y2="480" stroke={accent} stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#agent-arrow)" />
+    <rect x="330" y="465" width="130" height="30" fill="none" />
+    <text x="415" y="500" text-anchor="middle" font-size="12" font-family="monospace" fill={text}>
+      Final Response
+    </text>
+  </svg>
+</Diagram>

@@ -1,0 +1,146 @@
+---
+import { getCollection } from "astro:content";
+
+const cards: Record<string, { label: string; description: string }> = {
+  rag: {
+    label: "RAG",
+    description: "Grounding model outputs in your own data instead of hoping the weights remember it.",
+  },
+  "llm-evaluation": {
+    label: "LLM Evaluation",
+    description: "Measuring whether a change made the system better, not just different.",
+  },
+  mcp: {
+    label: "MCP",
+    description: "The emerging standard for wiring tools and data sources into any model client.",
+  },
+  "ai-agents": {
+    label: "AI Agents",
+    description: "Systems that plan, call tools, and act - with real error handling, not a happy-path demo.",
+  },
+  "voice-ai-agents": {
+    label: "Voice AI Agents",
+    description: "Agents that hold a real-time conversation, not a chatbot read aloud.",
+  },
+};
+
+const guides = (await getCollection("guides"))
+  .sort((a, b) => a.data.readingOrder - b.data.readingOrder)
+  .map((guide) => ({
+    href: `/guides/${guide.id}`,
+    label: cards[guide.id]?.label ?? guide.data.category,
+    description: cards[guide.id]?.description ?? guide.data.description,
+  }));
+
+const clusters = [
+  {
+    label: "Retrieval & Knowledge",
+    items: [
+      "Embeddings / Vector DBs",
+      "Vector Stores",
+      "Hybrid Search & Reranking",
+      "Chunking Strategies",
+      "Context Engineering",
+      "Context Window",
+    ],
+  },
+  {
+    label: "Agents & Orchestration",
+    items: [
+      "Multi-Agent Systems",
+      "Tool Calling",
+      "Function Calling",
+      "AI Orchestration",
+      "Agent Memory",
+      "Human-in-the-Loop",
+      "LLM Gateways / Routing",
+    ],
+  },
+  {
+    label: "Evaluation & Safety",
+    items: [
+      "Guardrails",
+      "Prompt Injection",
+      "AI Hallucination",
+      "Red Teaming",
+      "Structured Output",
+      "LLM Observability",
+      "AI Governance",
+    ],
+  },
+  {
+    label: "Infra & Performance",
+    items: [
+      "Fine-tuning",
+      "Prompt Caching",
+      "Cost Optimization",
+      "Latency Engineering",
+      "Quantization",
+      "Open-Weight Models",
+      "Small Language Models",
+      "Streaming Inference",
+    ],
+  },
+  {
+    label: "Voice",
+    items: ["Voice AI Engineering"],
+  },
+];
+---
+<section id="expertise" class="py-20 md:py-28 border-b border-border">
+  <div class="max-w-[1200px] mx-auto px-6">
+    <div class="animate-on-scroll">
+      <div class="flex flex-col gap-6 mb-12">
+        <div class="flex items-center gap-5 -ml-1">
+          <span class="index-numeral" aria-hidden="true">02</span>
+          <div class="section-label">Expertise</div>
+        </div>
+        <h2 class="font-display text-3xl md:text-[2.75rem] font-medium leading-[1.1]">
+          The stack, <em class="text-primary italic">layer by layer.</em>
+        </h2>
+        <p class="text-base text-muted-foreground leading-relaxed max-w-[33rem]">
+          Retrieval sits at the base, agents build on it, voice is one interface onto it - and
+          evaluation and infrastructure wrap the whole thing. Five of these go deep enough to
+          deserve their own guide.
+        </p>
+      </div>
+
+      <div class="mb-16">
+        <h3 class="font-mono text-xs font-semibold tracking-widest uppercase mb-5 text-primary">
+          Five deep dives
+        </h3>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {guides.map((guide) => (
+            <a href={guide.href} class="card-hover flex flex-col gap-2 p-5 border border-border bg-card">
+              <span class="font-mono text-sm font-semibold uppercase tracking-wide text-foreground">
+                {guide.label}
+              </span>
+              <p class="text-sm text-muted-foreground leading-relaxed flex-1">{guide.description}</p>
+              <span class="font-mono text-xs font-semibold text-primary mt-auto pt-1">Read the guide →</span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-mono text-xs font-semibold tracking-widest uppercase mb-6 text-primary">
+          Everything else I work in
+        </h3>
+        <div class="flex flex-col gap-6">
+          {clusters.map((cluster) => (
+            <div class="grid sm:grid-cols-[200px_1fr] gap-2 sm:gap-6 border-t border-border pt-4">
+              <span class="font-mono text-xs tracking-widest uppercase text-muted-foreground pt-1">
+                {cluster.label}
+              </span>
+              <ul class="flex flex-wrap gap-x-2 gap-y-2 list-none p-0 m-0">
+                {cluster.items.map((item) => (
+                  <li class="topic-chip">{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

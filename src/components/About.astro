@@ -1,0 +1,58 @@
+---
+import AboutDiagram from "./AboutDiagram.astro";
+
+const principles = [
+  { label: "01", text: "I write the eval suite before I write the demo." },
+  { label: "02", text: "Every agent gets a cost budget and a rollback plan." },
+  { label: "03", text: "If it only works on the happy path, it isn't done." },
+];
+---
+<section id="about" class="py-20 md:py-28 border-b border-border">
+  <div class="max-w-[1200px] mx-auto px-6">
+    <div class="animate-on-scroll">
+      <div class="grid lg:grid-cols-[1fr_minmax(0,420px)] gap-12 lg:gap-20 items-center">
+        <div class="flex flex-col gap-6">
+          <div class="flex items-center gap-5 -ml-1">
+            <span class="index-numeral" aria-hidden="true">01</span>
+            <div class="section-label">About Me</div>
+          </div>
+
+          <h2 class="font-display text-3xl md:text-[2.75rem] font-medium leading-[1.1]">
+            AI practitioner. <em class="text-primary italic">Still shipping code.</em>
+          </h2>
+
+          <p class="text-lg md:text-xl leading-snug max-w-[33rem]">
+            I started MTechZilla because too many good ideas were dying from bad execution. The highest-leverage work has since moved from building the app to <span class="text-primary">building the AI system inside it.</span>
+          </p>
+
+          <p class="text-base text-muted-foreground leading-relaxed max-w-[33rem]">
+            That's where my own hands are now - retrieval, agents, and evals - on top of a decade
+            of full-stack, mobile, and IoT work that taught me what production actually costs.
+          </p>
+
+          <a
+            href="https://www.freecodecamp.org/news/author/Sharvin26/"
+            target="_blank"
+            rel="noopener"
+            class="tap-link font-mono text-xs font-semibold tracking-widest uppercase text-primary hover:underline underline-offset-4 w-fit"
+          >
+            I write about this on freeCodeCamp →
+          </a>
+        </div>
+
+        <div class="lg:pl-4">
+          <AboutDiagram />
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-3 gap-8 sm:gap-10 border-t border-border pt-6 mt-14">
+        {principles.map((principle) => (
+          <div class="flex gap-4">
+            <span class="font-mono text-xs text-primary pt-1">{principle.label}</span>
+            <p class="text-sm text-muted-foreground leading-relaxed">{principle.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

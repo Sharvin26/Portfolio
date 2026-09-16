@@ -1,0 +1,60 @@
+---
+import Diagram from "../Diagram.astro";
+
+const box = { fill: "oklch(0.205 0.007 62)", stroke: "oklch(0.37 0.009 66)" };
+const text = "oklch(0.97 0.004 90)";
+const accent = "oklch(0.77 0.16 71)";
+
+const nodes = [
+  { x: 10, w: 140, label: "Eval Dataset" },
+  { x: 190, w: 150, label: "System Under Test" },
+  { x: 380, w: 130, label: "Outputs" },
+  { x: 550, w: 150, label: "Scorers / Judges" },
+  { x: 740, w: 120, label: "Report" },
+];
+---
+<Diagram minWidth={700} caption="Evals run as a loop: score a change against a fixed dataset, then feed the report back into the next iteration.">
+  <svg viewBox="0 0 900 190" role="img" aria-labelledby="eval-diagram-title eval-diagram-desc" class="w-full h-auto">
+    <title id="eval-diagram-title">LLM evaluation loop</title>
+    <desc id="eval-diagram-desc">
+      A fixed evaluation dataset is run through the system under test to produce outputs. Those
+      outputs are scored by rule-based checks, LLM-as-judge, or human review, producing a report
+      that feeds back into the next iteration of the system.
+    </desc>
+    <defs>
+      <marker id="eval-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8 Z" fill={accent} />
+      </marker>
+    </defs>
+    {nodes.map((n, i) => (
+      <>
+        <rect x={n.x} y="60" width={n.w} height="50" fill={box.fill} stroke={box.stroke} stroke-width="1.5" />
+        <text x={n.x + n.w / 2} y="90" text-anchor="middle" font-size="13" font-family="monospace" fill={text}>
+          {n.label}
+        </text>
+        {i < nodes.length - 1 && (
+          <line
+            x1={n.x + n.w}
+            y1="85"
+            x2={nodes[i + 1].x - 6}
+            y2="85"
+            stroke={accent}
+            stroke-width="2"
+            marker-end="url(#eval-arrow)"
+          />
+        )}
+      </>
+    ))}
+    <path
+      d="M 800 60 L 800 20 L 265 20 L 265 55"
+      fill="none"
+      stroke={accent}
+      stroke-width="1.5"
+      stroke-dasharray="4 3"
+      marker-end="url(#eval-arrow)"
+    />
+    <text x="530" y="15" text-anchor="middle" font-size="11" font-family="monospace" fill={accent}>
+      feeds the next iteration
+    </text>
+  </svg>
+</Diagram>

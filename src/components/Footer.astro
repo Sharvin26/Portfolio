@@ -1,0 +1,146 @@
+---
+import GithubIcon from "./icons/Github.astro";
+import LinkedInIcon from "./icons/LinkedIn.astro";
+import XIcon from "./icons/X.astro";
+import InstagramIcon from "./icons/Instagram.astro";
+
+const FCC_URL = "https://www.freecodecamp.org/news/author/Sharvin26/";
+
+const socialLinks = [
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/sharvinshah/", Icon: LinkedInIcon },
+  { label: "GitHub", href: "https://github.com/Sharvin26", Icon: GithubIcon },
+  { label: "X", href: "https://x.com/sharvinshah26", Icon: XIcon },
+  { label: "Instagram", href: "https://www.instagram.com/thesharvinshah/", Icon: InstagramIcon },
+];
+
+const navColumn = [
+  { label: "About", href: "/#about" },
+  { label: "Expertise", href: "/#expertise" },
+];
+
+const guidesColumn = [
+  { label: "All Guides", href: "/guides" },
+  { label: "RAG", href: "/guides/rag" },
+  { label: "MCP", href: "/guides/mcp" },
+  { label: "LLM Evaluation", href: "/guides/llm-evaluation" },
+  { label: "AI Agents", href: "/guides/ai-agents" },
+  { label: "Voice AI Agents", href: "/guides/voice-ai-agents" },
+];
+
+const mtechzillaColumn = [
+  { label: "Our Work", href: "https://www.mtechzilla.com/our-work" },
+  { label: "Services", href: "https://www.mtechzilla.com/services" },
+  { label: "Contact", href: "https://www.mtechzilla.com/contact" },
+];
+---
+<footer class="bg-card">
+  <div class="border-t border-border">
+    <div class="max-w-[1200px] mx-auto px-6 py-14">
+      <div class="grid md:grid-cols-[280px_1fr] gap-12 md:gap-20">
+        <div class="flex flex-col gap-6">
+          <div>
+            <p class="font-display text-xl font-medium tracking-wide mb-3">Sharvin Shah</p>
+            <p class="text-sm leading-relaxed text-muted-foreground">
+              CEO &amp; Chief AI Officer at MTechZilla. Building AI systems for
+              startups since 2021.
+            </p>
+          </div>
+          <div class="flex flex-col gap-4">
+            <div>
+              <p class="font-mono text-xs font-semibold uppercase tracking-widest mb-1 text-muted-foreground">
+                Talk to me about AI
+              </p>
+              <a
+                href="https://www.mtechzilla.com/contact"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="tap-link text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-70 text-primary"
+              >
+                mtechzilla.com/contact
+              </a>
+            </div>
+            <div>
+              <p class="font-mono text-xs font-semibold uppercase tracking-widest mb-1 text-muted-foreground">
+                Read my writing
+              </p>
+              <a
+                href={FCC_URL}
+                target="_blank"
+                rel="noopener"
+                class="tap-link text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-70 text-primary"
+              >
+                freeCodeCamp
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
+          <div>
+            <p class="font-mono text-xs font-bold uppercase tracking-widest mb-4 text-primary">
+              Navigation
+            </p>
+            <ul class="flex flex-col">
+              {navColumn.map(({ label, href }) => (
+                <li>
+                  <a href={href} class="tap-link text-sm text-muted-foreground transition-colors hover:opacity-70">
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <p class="font-mono text-xs font-bold uppercase tracking-widest mb-4 text-primary">
+              Guides
+            </p>
+            <ul class="flex flex-col">
+              {guidesColumn.map(({ label, href }) => (
+                <li>
+                  <a href={href} class="tap-link text-sm text-muted-foreground transition-colors hover:opacity-70">
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <p class="font-mono text-xs font-bold uppercase tracking-widest mb-4 text-primary">
+              MTechZilla
+            </p>
+            <ul class="flex flex-col">
+              {mtechzillaColumn.map(({ label, href }) => (
+                <li>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="tap-link text-sm text-muted-foreground transition-colors hover:opacity-70"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-border">
+    <div class="max-w-[1200px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="text-xs text-muted-foreground">© 2026, Sharvin Shah. All rights reserved.</p>
+
+      <div class="flex items-center gap-2">
+        {socialLinks.map(({ label, href, Icon }) => (
+          <a href={href} target="_blank" rel="noopener noreferrer" aria-label={label} class="social-icon-btn">
+            <Icon class="h-4 w-4" />
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,156 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import BaseLayout from "./BaseLayout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import FAQAccordion from "../components/FAQAccordion.astro";
+import JsonLd from "../components/schema/JsonLd.astro";
+import { articleSchema, breadcrumbSchema, faqSchema } from "../lib/schema";
+
+interface Props {
+  guide: CollectionEntry<"guides">;
+  headings: { depth: number; slug: string; text: string }[];
+}
+
+const { guide, headings } = Astro.props;
+const { title, description, tldr, publishDate, updatedDate, category, relatedSlugs, faqs } = guide.data;
+const slug = guide.id;
+const canonical = `https://www.sharvinshah.com/guides/${slug}`;
+const toc = headings.filter((h) => h.depth === 2);
+
+const SITE_HOST = "sharvinshah.com";
+
+function openExternalLinksInNewTab(html: string) {
+  return html.replace(/<a\s+([^>]*?)>/gi, (tag, attrs: string) => {
+    const href = attrs.match(/\bhref="(https?:\/\/[^"]+)"/i)?.[1];
+    if (!href || /\btarget=/i.test(attrs)) return tag;
+
+    const { hostname } = new URL(href);
+    if (hostname === SITE_HOST || hostname.endsWith(`.${SITE_HOST}`)) return tag;
+
+    const rel = new Set(attrs.match(/\brel="([^"]*)"/i)?.[1].split(/\s+/) ?? []);
+    rel.add("noopener");
+    rel.add("noreferrer");
+
+    const rest = attrs.replace(/\brel="[^"]*"/i, "").trim();
+    return `<a ${rest} target="_blank" rel="${[...rel].filter(Boolean).join(" ")}">`;
+  });
+}
+
+const articleHtml = openExternalLinksInNewTab(await Astro.slots.render("default"));
+
+const allGuides = await getCollection("guides");
+const related = allGuides.filter((g) => relatedSlugs.includes(g.id));
+
+const jsonLdItems: object[] = [
+  articleSchema({ title, description, slug, publishDate, updatedDate }),
+  breadcrumbSchema([
+    { name: "Home", url: "https://www.sharvinshah.com" },
+    { name: "Guides", url: "https://www.sharvinshah.com/guides" },
+    { name: title, url: canonical },
+  ]),
+];
+if (faqs.length > 0) jsonLdItems.push(faqSchema(faqs));
+---
+<BaseLayout
+  title={`${title} | Sharvin Shah`}
+  description={description}
+  canonical={canonical}
+  ogImage={`https://www.sharvinshah.com/og-${slug}.png`}
+  ogImageAlt={`${title} - a practitioner guide by Sharvin Shah`}
+>
+  <JsonLd data={jsonLdItems} />
+  <div class="flex min-h-screen flex-col bg-background">
+    <Navbar />
+    <main class="pt-32 pb-14 md:pt-36 md:pb-20">
+      <div class="max-w-[51rem] mx-auto px-6">
+        <nav aria-label="Breadcrumb" class="font-mono text-xs text-muted-foreground mb-8 flex items-center gap-2">
+          <a href="/" class="tap-target hover:text-foreground">Home</a>
+          <span aria-hidden="true">/</span>
+          <a href="/guides" class="tap-target hover:text-foreground">Guides</a>
+          <span aria-hidden="true">/</span>
+          <span class="text-foreground truncate" title={title}>{title}</span>
+        </nav>
+
+        <div>
+          <div class="section-label mb-4">{category}</div>
+          <h1 class="font-display text-3xl md:text-4xl lg:text-5xl font-semibold leading-tight mb-4">
+            {title}
+          </h1>
+          <p class="font-mono text-xs text-muted-foreground mb-10">
+            Published {publishDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+            {updatedDate && (
+              <>
+                {" "}· Updated {updatedDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+              </>
+            )}
+          </p>
+
+          <aside class="border-l-2 pl-5 py-1 mb-10" style="border-color: var(--accent-500)">
+            <p class="font-mono text-xs font-semibold uppercase tracking-widest text-primary mb-2">TL;DR</p>
+            <p class="text-base leading-relaxed">{tldr}</p>
+          </aside>
+        </div>
+
+        {toc.length > 0 && (
+          <nav aria-label="Table of contents" class="border border-border bg-card p-6 md:p-7 mb-12">
+            <p class="font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+              On this page
+            </p>
+            <ol class="flex flex-col list-decimal pl-7 marker:font-mono marker:text-sm marker:text-muted-foreground">
+              {toc.map((heading) => (
+                <li>
+                  <a href={`#${heading.slug}`} class="tap-link text-base leading-snug text-primary hover:underline">
+                    {heading.text}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )}
+
+        <slot name="diagram" />
+
+        <div class="prose-content min-w-0" set:html={articleHtml} />
+
+        {faqs.length > 0 && (
+          <div class="mt-16">
+            <h2 class="font-display text-2xl font-semibold mb-2">Frequently Asked Questions</h2>
+            <FAQAccordion faqs={faqs} />
+          </div>
+        )}
+
+        {related.length > 0 && (
+          <div class="mt-16 pt-10 border-t border-border">
+            <p class="font-mono text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+              Related Guides
+            </p>
+            <div class="grid sm:grid-cols-2 gap-4">
+              {related.map((r) => (
+                <a href={`/guides/${r.id}`} class="card-hover flex flex-col gap-3 p-6 border border-border bg-card">
+                  <span class="font-mono text-xs font-semibold tracking-widest uppercase text-primary">
+                    {r.data.category}
+                  </span>
+                  <h3 class="font-display text-xl font-semibold leading-snug">{r.data.title}</h3>
+                  <p class="text-sm text-muted-foreground leading-relaxed">{r.data.description}</p>
+                  <span class="font-mono text-xs font-semibold text-primary mt-auto pt-1">Read the guide →</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div class="mt-16 border border-border bg-card p-8 md:p-10 text-center flex flex-col items-center gap-4">
+          <h2 class="font-display text-2xl font-semibold">Want help implementing this?</h2>
+          <p class="text-muted-foreground max-w-md">
+            I take on a limited number of AI engineering engagements each quarter - RAG, agents, evals, or voice AI.
+          </p>
+          <a href="https://www.mtechzilla.com/contact" target="_blank" rel="noopener noreferrer" class="btn-primary">
+            Talk to Me About AI →
+          </a>
+        </div>
+      </div>
+    </main>
+    <Footer />
+  </div>
+</BaseLayout>

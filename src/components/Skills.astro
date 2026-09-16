@@ -1,0 +1,58 @@
+---
+const layers = [
+  { label: "Frontend", items: ["React", "Next.js", "Astro", "TypeScript", "Tailwind CSS", "shadcn/ui"] },
+  { label: "Mobile", items: ["React Native", "Expo", "gluestack-ui"] },
+  { label: "Backend", items: ["Node.js", "Express", "NestJS", "Hono"] },
+  { label: "Orchestration", items: ["LangChain", "LangGraph", "LangSmith", "Vercel AI SDK"] },
+
+  { label: "Gateways", items: ["Bedrock", "OpenRouter"] },
+  { label: "Models", items: ["OpenAI", "Anthropic", "Gemini", "Grok", "Llama"] },
+  { label: "Retrieval", items: ["pgvector", "Pinecone", "Voyage AI", "BM25"] },
+  { label: "Database", items: ["PostgreSQL", "MySQL", "SQLite", "MongoDB", "Redis", "DynamoDB"] },
+  { label: "Infra", items: ["AWS", "Supabase", "Vercel", "Cloudflare", "Docker", "Terraform"] },
+];
+---
+<section id="stack" class="py-20 md:py-28 border-b border-border">
+  <div class="max-w-[1200px] mx-auto px-6">
+    <div class="animate-on-scroll grid lg:grid-cols-[1fr_minmax(0,620px)] gap-12 lg:gap-16 items-center">
+      <div class="flex flex-col gap-6">
+        <div class="flex items-center gap-5 -ml-1">
+          <span class="index-numeral" aria-hidden="true">04</span>
+          <div class="section-label">Stack</div>
+        </div>
+        <h2 class="font-display text-3xl md:text-[2.75rem] font-medium leading-[1.1]">
+          The engineering <em class="text-primary italic">underneath.</em>
+        </h2>
+        <p class="text-base text-muted-foreground leading-relaxed max-w-[33rem]">
+          An AI feature is only as good as the system it ships inside. This is the path a request
+          actually takes - the screen it starts on, the server that takes it, the layers that
+          answer it, and the data and infrastructure holding it all up.
+        </p>
+      </div>
+
+      <div class="stack-panel">
+        <div class="stack-axis" aria-hidden="true">
+          <span>APP</span>
+          <span class="stack-axis-line"></span>
+          <span>INFRA</span>
+        </div>
+
+        <ul class="stack-layers">
+          {layers.map((layer) => (
+            <li class="stack-layer">
+              <span class="stack-layer-label">{layer.label}</span>
+              <span class="stack-layer-items">
+                {layer.items.map((item, i) => (
+                  <>
+                    {i > 0 && <span class="stack-sep" aria-hidden="true">·</span>}
+                    <span>{item}</span>
+                  </>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>

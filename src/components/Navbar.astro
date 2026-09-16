@@ -1,0 +1,137 @@
+---
+const navLinks = [
+  { label: "About", href: "/#about" },
+  { label: "Expertise", href: "/#expertise" },
+  { label: "Guides", href: "/guides" },
+];
+
+const inGuides = Astro.url.pathname.startsWith("/guides");
+---
+<header class="nav-shell" data-navbar>
+  <div class="nav-island" data-island>
+    <div class="nav-island-inner">
+      <div class="nav-brand">
+        <a href="/" class="nav-wordmark">
+          <span class="nav-mark" aria-hidden="true">
+            <span class="nav-mark-bracket">[</span>SS<span class="nav-mark-bracket">]</span>
+          </span>
+          <span class="nav-wordmark-name">Sharvin Shah</span>
+        </a>
+        {inGuides && (
+          <>
+            <span class="nav-brand-sep" aria-hidden="true">/</span>
+            <a href="/guides" class="nav-section">Guides</a>
+          </>
+        )}
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        {navLinks.map(({ label, href }) => (
+          <a href={href} class="nav-link">
+            {label}
+          </a>
+        ))}
+      </nav>
+
+      <a href="https://www.mtechzilla.com/contact" target="_blank" rel="noopener noreferrer" class="nav-cta">
+        Talk to Me About AI
+        <span class="nav-cta-arrow" aria-hidden="true">&#8594;</span>
+      </a>
+
+      <button
+        class="hamburger-btn md:hidden flex flex-col items-center justify-center gap-[5px] min-w-[44px] min-h-[44px]"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        data-menu-toggle
+      >
+        <span class="block h-px w-5 bg-foreground"></span>
+        <span class="block h-px w-5 bg-foreground"></span>
+        <span class="block h-px w-5 bg-foreground"></span>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="nav-mobile-menu hidden" data-mobile-menu>
+      {navLinks.map(({ label, href }) => (
+        <a
+          href={href}
+          class="tap-link text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
+          data-mobile-link
+        >
+          {label}
+        </a>
+      ))}
+      <a
+        href="https://www.mtechzilla.com/contact"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="nav-cta-mobile mt-2 mb-1"
+        data-mobile-link
+      >
+        Talk to Me About AI
+        <span class="nav-cta-arrow" aria-hidden="true">&#8594;</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const island = document.querySelector<HTMLElement>("[data-island]");
+  const toggleBtn = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+  const mobileMenu = document.querySelector<HTMLElement>("[data-mobile-menu]");
+
+  let ticking = false;
+  const syncContracted = () => {
+    island?.classList.toggle("is-contracted", window.scrollY > 24);
+    ticking = false;
+  };
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(syncContracted);
+    },
+    { passive: true }
+  );
+  syncContracted();
+
+  const isMenuOpen = () => mobileMenu?.classList.contains("is-open") === true;
+
+  const closeMenu = ({ refocus = false } = {}) => {
+    if (!isMenuOpen()) return;
+    mobileMenu?.classList.add("hidden");
+    mobileMenu?.classList.remove("is-open");
+    toggleBtn?.classList.remove("is-open");
+    toggleBtn?.setAttribute("aria-expanded", "false");
+    if (refocus) toggleBtn?.focus();
+  };
+
+  toggleBtn?.addEventListener("click", () => {
+    const isOpen = mobileMenu?.classList.toggle("hidden") === false;
+    mobileMenu?.classList.toggle("is-open", isOpen);
+    toggleBtn.classList.toggle("is-open", isOpen);
+    toggleBtn.setAttribute("aria-expanded", String(isOpen));
+
+    if (isOpen) mobileMenu?.querySelector<HTMLAnchorElement>("[data-mobile-link]")?.focus();
+  });
+
+  mobileMenu?.querySelectorAll("[data-mobile-link]").forEach((link) => {
+    link.addEventListener("click", () => closeMenu());
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeMenu({ refocus: true });
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!isMenuOpen()) return;
+    const target = event.target as Node;
+    if (island?.contains(target)) return;
+    closeMenu();
+  });
+
+  window.matchMedia("(min-width: 768px)").addEventListener("change", (e) => {
+    if (e.matches) closeMenu();
+  });
+</script>

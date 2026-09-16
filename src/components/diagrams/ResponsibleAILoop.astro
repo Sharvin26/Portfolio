@@ -1,0 +1,26 @@
+---
+const stages = [
+  { label: "Guardrails", note: "constrain" },
+  { label: "Evals", note: "measure" },
+  { label: "Oversight", note: "approve" },
+  { label: "Red Team", note: "attack" },
+];
+---
+<figure class="schematic m-0">
+  <div class="loop-stages">
+    {stages.map((stage, i) => (
+      <>
+        {i > 0 && <span class="flow-arrow" aria-hidden="true"></span>}
+        <div class="schematic-box">
+          <span class="schematic-title">{stage.label}</span>
+          <span class="schematic-note">{stage.note}</span>
+        </div>
+      </>
+    ))}
+  </div>
+
+  <p class="loop-return">
+    <span aria-hidden="true">&#8635;</span>
+    Every release, not once at launch
+  </p>
+</figure>

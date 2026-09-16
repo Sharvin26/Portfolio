@@ -1,0 +1,17 @@
+---
+interface Props {
+  caption: string;
+
+  minWidth?: number;
+}
+
+const { caption, minWidth } = Astro.props;
+---
+<figure class="my-10 border border-border bg-card p-6 md:p-8 not-prose">
+  <div class="diagram-scroll" style={minWidth ? `--diagram-min: ${minWidth}px` : undefined}>
+    <slot />
+  </div>
+  <figcaption class="font-mono text-xs text-muted-foreground mt-4 text-center">
+    {caption}
+  </figcaption>
+</figure>
