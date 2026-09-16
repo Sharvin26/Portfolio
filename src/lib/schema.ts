@@ -13,10 +13,14 @@ export function personSchema() {
       name: "MTechZilla",
       url: "https://www.mtechzilla.com",
     },
+    // Every profile that resolves to this same person. Search and AI systems
+    // use these to tie the entity together, so the list should be complete.
     sameAs: [
-      "https://x.com/sharvinshah26",
       "https://www.linkedin.com/in/sharvinshah/",
+      "https://x.com/sharvinshah26",
       "https://github.com/Sharvin26",
+      "https://www.instagram.com/thesharvinshah/",
+      "https://www.freecodecamp.org/news/author/Sharvin26/",
     ],
   };
 }
@@ -30,8 +34,12 @@ export function organizationSchema() {
     founder: {
       "@type": "Person",
       name: "Sharvin Shah",
+      url: SITE_URL,
     },
-    sameAs: ["https://www.linkedin.com/in/sharvinshah/"],
+    // No sameAs: the only URL here was linkedin.com/in/sharvinshah, which is a
+    // personal profile (/in/), not MTechZilla's company page (/company/).
+    // Claiming it as the organisation's own profile is a false entity link.
+    // Add the real company profiles here when they're to hand.
   };
 }
 
