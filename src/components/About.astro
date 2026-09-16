@@ -1,38 +1,50 @@
 ---
+const notes = [
+  { label: "01", text: "Started MTechZilla in 2021 to fix bad execution on good ideas." },
+  { label: "02", text: "Decade across SaaS, IoT, and mobile before moving into AI systems." },
+  { label: "03", text: "Now spend most hands-on time in retrieval, agents, and evals." },
+];
 ---
 
 <section id="about" class="py-20 md:py-28 border-b border-border">
   <div class="max-w-[1200px] mx-auto px-6">
-    <div class="animate-on-scroll">
-      <div class="section-label mb-6">About Me</div>
-      <div class="grid md:grid-cols-[1fr_1fr] gap-12 md:gap-20 items-start">
-        <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight">
-          Software engineer.<br />
-          <span class="text-primary">AI practitioner.</span><br />
-          Still shipping code.
-        </h2>
-        <div class="text-base space-y-5 text-muted-foreground">
-          <p class="leading-relaxed">
-            I started MTechZilla in 2021 because too many good ideas were dying
-            from bad execution. Over the last few years the highest-leverage work
-            moved from "build the app" to "build the AI system inside the app" —
-            so that's where I put my own hands now: retrieval pipelines, agent
-            orchestration, evals, and the unglamorous guardrail work that keeps a
-            model from embarrassing a client in production.
-          </p>
-          <p class="leading-relaxed">
-            I've built across the stack for over a decade — SaaS platforms, IoT
-            systems, mobile apps, backend infrastructure — and that full-stack
-            background is exactly why I don't treat AI features as a bolt-on demo.
-            An agent still needs a real API contract, a cost budget, an eval suite,
-            and a rollback plan. I design for all of that from day one.
-          </p>
-          <p class="leading-relaxed">
-            I also write regularly on freeCodeCamp — if I've solved a problem
-            worth documenting, in AI or otherwise, I'd rather share it than let it
-            collect dust.
-          </p>
+    <div class="animate-on-scroll grid md:grid-cols-[220px_1fr] gap-10 md:gap-16">
+      <div class="flex md:flex-col gap-4 md:gap-6 items-baseline md:items-start">
+        <span class="index-numeral">01</span>
+        <div>
+          <div class="section-label mb-3">About Me</div>
+          <h2 class="font-display text-2xl md:text-3xl font-extrabold leading-tight">
+            AI practitioner.<br /><span class="text-primary">Still shipping code.</span>
+          </h2>
         </div>
+      </div>
+
+      <div class="flex flex-col gap-8">
+        <p class="text-xl md:text-2xl leading-snug font-medium max-w-2xl">
+          I started MTechZilla because too many good ideas were dying from bad execution.
+          The highest-leverage work has since moved from "build the app" to
+          <span class="text-primary">"build the AI system inside the app"</span> — so
+          that's where I put my own hands now: retrieval pipelines, agent orchestration,
+          evals, and the unglamorous guardrail work that keeps a model from embarrassing
+          a client in production.
+        </p>
+
+        <div class="grid sm:grid-cols-3 gap-6 border-t border-border pt-6">
+          {notes.map((note) => (
+            <div class="flex flex-col gap-1.5">
+              <span class="font-mono text-xs text-primary">{note.label}</span>
+              <p class="text-sm text-muted-foreground leading-relaxed">{note.text}</p>
+            </div>
+          ))}
+        </div>
+
+        <p class="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+          I've built across the stack for over a decade, which is exactly why I don't
+          treat AI features as a bolt-on demo — an agent still needs a real API contract,
+          a cost budget, an eval suite, and a rollback plan. I also write regularly on
+          freeCodeCamp; if I've solved a problem worth documenting, I'd rather share it
+          than let it collect dust.
+        </p>
       </div>
     </div>
   </div>

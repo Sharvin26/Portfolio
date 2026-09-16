@@ -1,54 +1,68 @@
 ---
-import SkillCard from "./SkillCard.astro";
+import { Code } from "astro:components";
 
-const skillCards = [
-  {
-    number: "01",
-    title: "AI / LLM Infrastructure",
-    skills: ["OpenAI", "Anthropic", "LangChain", "LlamaIndex", "pgvector", "vLLM"],
-  },
-  {
-    number: "02",
-    title: "Backend Development",
-    skills: ["Node.js", "Express", "REST APIs", "Python"],
-  },
-  {
-    number: "03",
-    title: "Frontend Development",
-    skills: ["React", "Next.js", "TypeScript", "Tailwind CSS"],
-  },
-  {
-    number: "04",
-    title: "Mobile Development",
-    skills: ["React Native", "Flutter"],
-  },
-  {
-    number: "05",
-    title: "Databases",
-    skills: ["PostgreSQL", "MongoDB", "MySQL", "Redis", "Supabase"],
-  },
-  {
-    number: "06",
-    title: "DevOps & Cloud",
-    skills: ["AWS", "Docker", "Kubernetes", "CI/CD", "Terraform"],
-  },
-];
+const stackYaml = `# stack.yaml
+ai_llm:
+  - OpenAI
+  - Anthropic
+  - LangChain
+  - LlamaIndex
+  - pgvector
+  - vLLM
+
+backend:
+  - Node.js
+  - Express
+  - REST APIs
+  - Python
+
+frontend:
+  - React
+  - Next.js
+  - TypeScript
+  - Tailwind CSS
+
+mobile:
+  - React Native
+  - Flutter
+
+data:
+  - PostgreSQL
+  - MongoDB
+  - Redis
+  - Supabase
+
+infra:
+  - AWS
+  - Docker
+  - Kubernetes
+  - Terraform`;
 ---
 
 <section id="stack" class="py-16 md:py-20 border-b border-border">
   <div class="max-w-[1200px] mx-auto px-6">
-    <div class="animate-on-scroll">
-      <div class="section-label mb-6">Stack</div>
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-        <h2 class="font-display text-2xl md:text-3xl font-extrabold max-w-lg">The Engineering Underneath</h2>
-        <p class="text-sm max-w-xs leading-relaxed text-muted-foreground">
-          AI systems still need a real full-stack foundation. Here's what's under mine.
-        </p>
+    <div class="animate-on-scroll grid md:grid-cols-[220px_1fr] gap-10 md:gap-16">
+      <div class="flex md:flex-col gap-4 md:gap-6 items-baseline md:items-start">
+        <span class="index-numeral">05</span>
+        <div>
+          <div class="section-label mb-3">Stack</div>
+          <h2 class="font-display text-2xl md:text-3xl font-extrabold leading-tight">
+            The Engineering<br />Underneath
+          </h2>
+          <p class="text-sm text-muted-foreground leading-relaxed mt-3 max-w-xs">
+            AI systems still need a real full-stack foundation. Here's what's under mine.
+          </p>
+        </div>
       </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-px border border-border" style="background-color: var(--border)">
-        {skillCards.map((card) => (
-          <SkillCard {...card} />
-        ))}
+
+      <div class="border border-border bg-card">
+        <div class="flex items-center gap-1.5 px-4 py-2.5 border-b border-border">
+          <span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--neutral-600)"></span>
+          <span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--neutral-600)"></span>
+          <span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--neutral-600)"></span>
+          <span class="ml-2 text-xs font-mono text-muted-foreground">stack.yaml</span>
+        </div>
+        <Code code={stackYaml} lang="yaml" theme="css-variables" />
       </div>
     </div>
   </div>

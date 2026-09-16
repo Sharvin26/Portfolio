@@ -38,6 +38,7 @@ const clusters = [
       { label: "Red Teaming", description: "Adversarially testing a system before your users — or the internet — do it for you." },
       { label: "Structured Output", description: "Getting a model to reliably return JSON your code can trust without regex duct tape." },
       { label: "LLM Observability", description: "Seeing what a chain or agent actually did, not just what it returned." },
+      { label: "AI Governance", description: "Turning \"responsible AI\" from a policy slide into auditable, enforced controls." },
     ],
   },
   {
@@ -66,21 +67,24 @@ const clusters = [
 <section id="expertise" class="py-20 md:py-28 border-b border-border">
   <div class="max-w-[1200px] mx-auto px-6">
     <div class="animate-on-scroll">
-      <div class="section-label mb-6">Expertise</div>
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-        <h2 class="font-display text-3xl md:text-4xl font-extrabold max-w-lg">Where I Go Deep</h2>
-        <p class="text-sm max-w-xs leading-relaxed text-muted-foreground">
-          The AI/LLM engineering surface I work in daily — five guides below go deeper.
-        </p>
+      <div class="flex flex-row-reverse md:flex-row items-start justify-between gap-6 mb-12">
+        <span class="index-numeral hidden md:block">02</span>
+        <div>
+          <div class="section-label mb-3">Expertise</div>
+          <h2 class="font-display text-3xl md:text-4xl font-extrabold max-w-lg">Where I Go Deep</h2>
+          <p class="text-sm max-w-md leading-relaxed text-muted-foreground mt-3">
+            The AI/LLM engineering surface I work in daily — five guides below go deeper.
+          </p>
+        </div>
       </div>
 
-      <div class="flex flex-col gap-10">
+      <div class="flex flex-col gap-12">
         {clusters.map((cluster) => (
           <div>
-            <h3 class="font-mono text-xs font-semibold tracking-widest uppercase mb-4 text-muted-foreground">
+            <h3 class="font-mono text-xs font-semibold tracking-widest uppercase mb-1 text-primary">
               {cluster.label}
             </h3>
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="flex flex-col">
               {cluster.items.map((item) => (
                 <ExpertiseCard {...item} />
               ))}

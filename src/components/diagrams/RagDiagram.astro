@@ -1,0 +1,54 @@
+---
+import Diagram from "../Diagram.astro";
+
+const box = { fill: "oklch(0.205 0.007 62)", stroke: "oklch(0.37 0.009 66)" };
+const text = "oklch(0.97 0.004 90)";
+const muted = "oklch(0.56 0.01 70)";
+const accent = "oklch(0.77 0.16 71)";
+
+const nodes = [
+  { x: 10, w: 130, label: "User Query" },
+  { x: 170, w: 150, label: "Embed + Retrieve" },
+  { x: 350, w: 130, label: "Rerank" },
+  { x: 510, w: 160, label: "LLM + Context" },
+  { x: 700, w: 150, label: "Grounded Answer" },
+];
+---
+
+<Diagram caption="A production RAG pipeline: retrieve, rerank, then generate with the retrieved context attached.">
+  <svg viewBox="0 0 870 140" role="img" aria-labelledby="rag-diagram-title rag-diagram-desc" class="w-full h-auto">
+    <title id="rag-diagram-title">RAG retrieval pipeline architecture</title>
+    <desc id="rag-diagram-desc">
+      A user query is embedded and used to retrieve candidate chunks from a vector store, those
+      candidates are reranked, the top results are attached to the prompt as context, and the LLM
+      generates a grounded answer.
+    </desc>
+    <defs>
+      <marker id="rag-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8 Z" fill={accent} />
+      </marker>
+    </defs>
+    {nodes.map((n, i) => (
+      <>
+        <rect x={n.x} y="50" width={n.w} height="50" fill={box.fill} stroke={box.stroke} stroke-width="1.5" />
+        <text x={n.x + n.w / 2} y="80" text-anchor="middle" font-size="13" font-family="monospace" fill={text}>
+          {n.label}
+        </text>
+        {i < nodes.length - 1 && (
+          <line
+            x1={n.x + n.w}
+            y1="75"
+            x2={nodes[i + 1].x - 6}
+            y2="75"
+            stroke={accent}
+            stroke-width="2"
+            marker-end="url(#rag-arrow)"
+          />
+        )}
+      </>
+    ))}
+    <text x="435" y="25" text-anchor="middle" font-size="11" font-family="monospace" fill={muted}>
+      vector store lookup happens between embed and rerank
+    </text>
+  </svg>
+</Diagram>

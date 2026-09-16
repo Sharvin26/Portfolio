@@ -1,0 +1,55 @@
+---
+import Diagram from "../Diagram.astro";
+
+const box = { fill: "oklch(0.205 0.007 62)", stroke: "oklch(0.37 0.009 66)" };
+const text = "oklch(0.97 0.004 90)";
+const muted = "oklch(0.56 0.01 70)";
+const accent = "oklch(0.77 0.16 71)";
+
+const nodes = [
+  { x: 10, w: 120, label: "Caller Audio" },
+  { x: 155, w: 120, label: "ASR" },
+  { x: 300, w: 150, label: "Agent + Tools" },
+  { x: 475, w: 120, label: "TTS" },
+  { x: 620, w: 150, label: "Spoken Reply" },
+];
+---
+
+<Diagram caption="A voice agent pipeline. Turn-taking and barge-in detection sit between ASR and the agent so the caller can interrupt.">
+  <svg viewBox="0 0 800 170" role="img" aria-labelledby="voice-diagram-title voice-diagram-desc" class="w-full h-auto">
+    <title id="voice-diagram-title">Voice AI agent pipeline</title>
+    <desc id="voice-diagram-desc">
+      Caller audio is transcribed by automatic speech recognition, passed to an agent that can
+      call tools, and the agent's text response is converted back to speech by text-to-speech
+      and played back to the caller. A turn-taking layer between ASR and the agent detects
+      when the caller is done speaking or is interrupting.
+    </desc>
+    <defs>
+      <marker id="voice-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8 Z" fill={accent} />
+      </marker>
+    </defs>
+    {nodes.map((n, i) => (
+      <>
+        <rect x={n.x} y="60" width={n.w} height="50" fill={box.fill} stroke={box.stroke} stroke-width="1.5" />
+        <text x={n.x + n.w / 2} y="90" text-anchor="middle" font-size="13" font-family="monospace" fill={text}>
+          {n.label}
+        </text>
+        {i < nodes.length - 1 && (
+          <line
+            x1={n.x + n.w}
+            y1="85"
+            x2={nodes[i + 1].x - 6}
+            y2="85"
+            stroke={accent}
+            stroke-width="2"
+            marker-end="url(#voice-arrow)"
+          />
+        )}
+      </>
+    ))}
+    <text x="240" y="35" text-anchor="middle" font-size="11" font-family="monospace" fill={muted}>
+      turn-taking / barge-in
+    </text>
+  </svg>
+</Diagram>

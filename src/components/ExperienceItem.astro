@@ -10,7 +10,8 @@ interface Props {
 const { title, company, period, description, current } = Astro.props;
 ---
 
-<div class="grid md:grid-cols-[180px_1fr] gap-4 md:gap-8 border-b border-border pb-10 mb-10 last:border-b-0 last:mb-0 last:pb-0">
+<div class="relative grid md:grid-cols-[180px_1fr] gap-4 md:gap-8 pb-2">
+  <span class="experience-dot"></span>
   <div class="flex flex-col gap-1 pt-1">
     <span class="font-mono text-xs font-semibold tracking-widest uppercase text-muted-foreground">
       {period}

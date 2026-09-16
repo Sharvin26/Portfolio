@@ -102,6 +102,26 @@ All live under a `/guides/` hub (per the site's content-collection architecture)
 
 ---
 
+## Responsible AI / AI Governance (added post-launch, per owner request)
+
+The owner asked for "I build responsible AI systems" messaging on the homepage and a Treg check on the "Responsible AI" keyword space, since large enterprises (IBM watsonx.governance, Microsoft, Google, AWS) publish heavily here.
+
+| Topic | Primary keyword | SV | KD | Intent | Notes |
+|---|---|---|---|---|---|
+| Responsible AI | responsible ai | 1,900 | 58 | informational | Dominated by vendor brand pages (Microsoft/Google/IBM/AWS own docs rank for their branded variants) — hard for a personal site to win the broad term. |
+| — | responsible ai principles | 260 | 58 | informational | Same competitive dynamic as above. |
+| **AI Governance** | **ai governance** | **5,400** | **27** | informational | Meaningfully easier than "responsible ai" at higher volume — a real opportunity. |
+| — | **ai governance framework** | **4,400** | **10** | informational | **Strong sweet spot** — high volume, very low difficulty. |
+| — | ai governance tools | 1,600 | 18 | commercial | Achievable, commercial intent (buyers evaluating tooling). |
+| — | ai governance certification | 1,600 | 7 | informational | Very low difficulty but navigational/certification-seeker intent, not the site's ICP — skip. |
+
+**Recommendation:** don't target "Responsible AI" as a standalone SEO page — it's a hard, brand-dominated term and would compete directly with IBM/Microsoft/Google/AWS official docs. Instead:
+1. Use "Responsible AI" as **positioning language** (homepage statement, About copy) rather than an SEO keyword target — it's a credibility phrase for human readers, not a term to rank for.
+2. **"AI Governance" and especially "AI governance framework" are genuine, low-difficulty SEO opportunities** or at higher priority than "Responsible AI" itself. If a 6th guide is ever added, `/guides/ai-governance` targeting "ai governance framework" (4,400/mo, KD 10) would be a much easier win than a "Responsible AI" page — not built in this pass since it's outside the original 5-pillar scope, but flagged here for a future round.
+3. Added an "AI Governance" card to the homepage Expertise section (Evaluation & Safety cluster) linking nowhere yet (no dedicated page) — matches the "flag rather than silently overbuild" approach used elsewhere in this file.
+
+Spend for this addition: 2 calls, ~$0.026.
+
 ## Notes for implementation
 
 - No fabricated data: every number above is pulled directly from the Treg/DataForSEO calls; thin/zero-result seeds are flagged rather than backfilled with guesses.

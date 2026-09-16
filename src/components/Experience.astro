@@ -4,34 +4,44 @@ import ExperienceItem from "./ExperienceItem.astro";
 
 <section id="experience" class="py-20 md:py-28 border-b border-border">
   <div class="max-w-[1200px] mx-auto px-6">
-    <div class="animate-on-scroll">
-      <div class="section-label mb-6">Experience</div>
-      <h2 class="font-display text-3xl md:text-4xl font-extrabold mb-12">Where I've Built &amp; Led</h2>
-      <ExperienceItem
-        title="CEO & Chief AI Officer"
-        company="MTechZilla"
-        period="Feb 2021 – Present"
-        current
-        description="I built MTechZilla to give startups real engineering support — without the overhead of a large agency. Today most of that work is AI systems: RAG pipelines, agents, and the eval and guardrail infrastructure that makes them safe to ship. Clients arrive with an AI idea and leave with a system that's been tested against failure, not just a happy path."
-      />
-      <ExperienceItem
-        title="Contributor"
-        company="freeCodeCamp"
-        period="May 2020 – Present"
-        description="I write practical guides on AI systems, SaaS architecture, and lessons from shipping real products. No toy examples — just what actually works in production."
-      />
-      <ExperienceItem
-        title="Software Developer"
-        company="KPlay Team"
-        period="Jul 2020 – Jan 2021"
-        description="Built and owned the backend REST APIs powering the platform's core features. Worked directly with the frontend team to make sure APIs were fast, reliable, and built to the right contract."
-      />
-      <ExperienceItem
-        title="Software Developer"
-        company="Phynart"
-        period="Oct 2018 – Mar 2020"
-        description="Built backend services and secure APIs for an IoT platform managing device data at scale. Designed and shipped an Over-the-Air (OTA) update system that let the team push software to smart devices without manual steps."
-      />
+    <div class="animate-on-scroll grid md:grid-cols-[220px_1fr] gap-10 md:gap-16">
+      <div class="flex md:flex-col gap-4 md:gap-6 items-baseline md:items-start">
+        <span class="index-numeral">04</span>
+        <div>
+          <div class="section-label mb-3">Experience</div>
+          <h2 class="font-display text-2xl md:text-3xl font-extrabold leading-tight">
+            Where I've<br />Built &amp; Led
+          </h2>
+        </div>
+      </div>
+
+      <div class="experience-rail flex flex-col gap-10">
+        <ExperienceItem
+          title="CEO & Chief AI Officer"
+          company="MTechZilla"
+          period="Feb 2021 – Present"
+          current
+          description="I built MTechZilla to give startups real engineering support — without the overhead of a large agency. Today most of that work is AI systems: RAG pipelines, agents, and the eval and guardrail infrastructure that makes them safe to ship. Clients arrive with an AI idea and leave with a system that's been tested against failure, not just a happy path."
+        />
+        <ExperienceItem
+          title="Contributor"
+          company="freeCodeCamp"
+          period="May 2020 – Present"
+          description="I write practical guides on AI systems, SaaS architecture, and lessons from shipping real products. No toy examples — just what actually works in production."
+        />
+        <ExperienceItem
+          title="Software Developer"
+          company="KPlay Team"
+          period="Jul 2020 – Jan 2021"
+          description="Built and owned the backend REST APIs powering the platform's core features. Worked directly with the frontend team to make sure APIs were fast, reliable, and built to the right contract."
+        />
+        <ExperienceItem
+          title="Software Developer"
+          company="Phynart"
+          period="Oct 2018 – Mar 2020"
+          description="Built backend services and secure APIs for an IoT platform managing device data at scale. Designed and shipped an Over-the-Air (OTA) update system that let the team push software to smart devices without manual steps."
+        />
+      </div>
     </div>
   </div>
 </section>

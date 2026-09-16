@@ -1,4 +1,27 @@
 User-agent: *
 Allow: /
 
+# AI retrieval/search crawlers (used to cite this site in AI answers)
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+# AI training crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
 Sitemap: https://sharvinshah.com/sitemap-index.xml

@@ -1,0 +1,44 @@
+---
+const pillars = [
+  { label: "Guardrails", href: "/#expertise" },
+  { label: "Evals", href: "/guides/llm-evaluation" },
+  { label: "Human Oversight" },
+  { label: "Red Teaming" },
+];
+---
+
+<section id="responsible-ai" class="py-20 md:py-28 border-b border-border">
+  <div class="max-w-[1200px] mx-auto px-6">
+    <div class="animate-on-scroll grid md:grid-cols-[220px_1fr] gap-10 md:gap-16">
+      <div class="flex md:flex-col gap-4 md:gap-6 items-baseline md:items-start">
+        <span class="index-numeral">03</span>
+        <div class="section-label">Responsible AI</div>
+      </div>
+
+      <div class="flex flex-col gap-6">
+        <p class="font-display text-2xl md:text-4xl font-extrabold leading-tight max-w-3xl">
+          I build AI systems people can trust — governed, evaluated, and safe by
+          design, not by accident.
+        </p>
+        <p class="text-muted-foreground leading-relaxed max-w-2xl">
+          "Responsible AI" is usually a slide from a compliance team that never
+          shipped a model. For me it's an engineering discipline: guardrails that
+          actually constrain outputs, eval suites that catch regressions before
+          users do, a human in the loop wherever the cost of a wrong answer is
+          real, and adversarial testing before the internet does it for me.
+        </p>
+        <div class="flex flex-wrap gap-x-8 gap-y-3 pt-2 border-t border-border">
+          {pillars.map((pillar) =>
+            pillar.href ? (
+              <a href={pillar.href} class="font-mono text-sm text-primary hover:underline underline-offset-4">
+                {pillar.label}
+              </a>
+            ) : (
+              <span class="font-mono text-sm text-foreground">{pillar.label}</span>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

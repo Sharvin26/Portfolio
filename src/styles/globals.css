@@ -75,6 +75,9 @@
     font-family: "Urbanist Variable", system-ui, sans-serif;
     font-weight: 400;
     line-height: 1.7;
+    background-image: radial-gradient(oklch(0.27 0.008 64) 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-attachment: fixed;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: "Urbanist Variable", system-ui, sans-serif;
@@ -302,6 +305,56 @@ pre.astro-code {
   font-family: "Urbanist Variable", system-ui, sans-serif;
 }
 
+/* ─── Section index numerals ─────────────────────────────── */
+
+.index-numeral {
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--border);
+}
+
+/* ─── Expertise index rows (replaces card-grid pattern) ──── */
+
+.expertise-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.375rem 1.5rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+  transition: padding-left 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  .expertise-row {
+    grid-template-columns: 220px 1fr auto;
+    align-items: baseline;
+  }
+}
+
+.expertise-row:hover {
+  padding-left: 0.5rem;
+  border-bottom-color: var(--accent-500);
+}
+
+/* ─── Experience rail (timeline) ─────────────────────────── */
+
+.experience-rail {
+  padding-left: 1.5rem;
+  border-left: 1px solid var(--border);
+}
+
+.experience-dot {
+  position: absolute;
+  left: -1.5rem;
+  top: 0.35rem;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-500);
+}
+
 /* ─── Hero rule ──────────────────────────────────────────── */
 
 .hero-rule {
@@ -379,6 +432,80 @@ pre.astro-code {
   border-color: var(--accent-500);
   color: var(--accent-500);
   transform: translateY(-1px);
+}
+
+/* ─── Long-form guide prose ──────────────────────────────── */
+
+.prose-content {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--muted-foreground);
+}
+
+.prose-content > * + * {
+  margin-top: 1.5rem;
+}
+
+.prose-content h2 {
+  font-family: "Manrope Variable", system-ui, sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--foreground);
+  scroll-margin-top: 5rem;
+  margin-top: 3rem;
+}
+
+.prose-content h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--foreground);
+  scroll-margin-top: 5rem;
+  margin-top: 2rem;
+}
+
+.prose-content p, .prose-content li {
+  color: var(--muted-foreground);
+}
+
+.prose-content strong {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.prose-content a {
+  color: var(--accent-500);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose-content ul, .prose-content ol {
+  padding-left: 1.5rem;
+}
+
+.prose-content ul {
+  list-style: disc;
+}
+
+.prose-content ol {
+  list-style: decimal;
+}
+
+.prose-content blockquote {
+  border-left: 3px solid var(--accent-500);
+  padding-left: 1.25rem;
+  color: var(--foreground);
+  font-style: italic;
+}
+
+.prose-content code:not(pre code) {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  padding: 0.15rem 0.4rem;
+  font-size: 0.875em;
+}
+
+.prose-content pre {
+  margin-top: 1.5rem;
 }
 
 /* ─── FAQ accordion (native details/summary) ────────────── */

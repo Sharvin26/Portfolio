@@ -1,0 +1,16 @@
+---
+interface Props {
+  caption: string;
+}
+
+const { caption } = Astro.props;
+---
+
+<figure class="my-10 border border-border bg-card p-6 md:p-8 not-prose">
+  <div class="overflow-x-auto">
+    <slot />
+  </div>
+  <figcaption class="font-mono text-xs text-muted-foreground mt-4 text-center">
+    {caption}
+  </figcaption>
+</figure>

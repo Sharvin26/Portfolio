@@ -1,0 +1,38 @@
+---
+import { getCollection, render } from "astro:content";
+import PillarLayout from "../../layouts/PillarLayout.astro";
+import RagDiagram from "../../components/diagrams/RagDiagram.astro";
+import McpDiagram from "../../components/diagrams/McpDiagram.astro";
+import LlmEvaluationDiagram from "../../components/diagrams/LlmEvaluationDiagram.astro";
+import AiAgentsDiagram from "../../components/diagrams/AiAgentsDiagram.astro";
+import VoiceAiAgentsDiagram from "../../components/diagrams/VoiceAiAgentsDiagram.astro";
+
+export async function getStaticPaths() {
+  const guides = await getCollection("guides");
+  return guides.map((guide) => ({
+    params: { slug: guide.id },
+    props: { guide },
+  }));
+}
+
+const diagrams: Record<string, typeof RagDiagram> = {
+  rag: RagDiagram,
+  mcp: McpDiagram,
+  "llm-evaluation": LlmEvaluationDiagram,
+  "ai-agents": AiAgentsDiagram,
+  "voice-ai-agents": VoiceAiAgentsDiagram,
+};
+
+const { guide } = Astro.props;
+const { Content, headings } = await render(guide);
+const DiagramComponent = diagrams[guide.id];
+---
+
+<PillarLayout guide={guide} headings={headings}>
+  {DiagramComponent && (
+    <Fragment slot="diagram">
+      <DiagramComponent />
+    </Fragment>
+  )}
+  <Content />
+</PillarLayout>
