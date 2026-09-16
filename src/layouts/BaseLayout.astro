@@ -2,6 +2,8 @@
 import "@fontsource-variable/urbanist";
 import "@fontsource-variable/fraunces";
 import "@fontsource-variable/jetbrains-mono";
+import frauncesWoff2 from "@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2?url";
+import urbanistWoff2 from "@fontsource-variable/urbanist/files/urbanist-latin-wght-normal.woff2?url";
 import "../styles/globals.css";
 import SEO from "../components/SEO.astro";
 
@@ -10,30 +12,31 @@ interface Props {
   description: string;
   keywords?: string[];
   ogImage?: string;
+  ogImageAlt?: string;
   ogImageWidth?: number;
   ogImageHeight?: number;
   canonical?: string;
 }
 
-const { title, description, keywords, ogImage, ogImageWidth, ogImageHeight, canonical } = Astro.props;
+const { title, description, keywords, ogImage, ogImageAlt, ogImageWidth, ogImageHeight, canonical } = Astro.props;
 ---
-
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- viewport-fit=cover pairs with the env(safe-area-inset-*) rules in
-         globals.css so content clears the notch / Dynamic Island in landscape -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <!-- Hex, not oklch(): Safari does not parse OKLCH here and silently drops
-         the value, which left the iOS toolbar tint at its default. -->
     <meta name="theme-color" content="#0d0806" />
-    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="preload" href={urbanistWoff2} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={frauncesWoff2} as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <SEO
       title={title}
       description={description}
       keywords={keywords}
       ogImage={ogImage}
+      ogImageAlt={ogImageAlt}
       ogImageWidth={ogImageWidth}
       ogImageHeight={ogImageHeight}
       canonical={canonical}

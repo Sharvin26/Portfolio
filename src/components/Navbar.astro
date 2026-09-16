@@ -4,12 +4,26 @@ const navLinks = [
   { label: "Expertise", href: "/#expertise" },
   { label: "Guides", href: "/guides" },
 ];
----
 
+const inGuides = Astro.url.pathname.startsWith("/guides");
+---
 <header class="nav-shell" data-navbar>
   <div class="nav-island" data-island>
     <div class="nav-island-inner">
-      <a href="/" class="nav-wordmark">Sharvin Shah</a>
+      <div class="nav-brand">
+        <a href="/" class="nav-wordmark">
+          <span class="nav-mark" aria-hidden="true">
+            <span class="nav-mark-bracket">[</span>SS<span class="nav-mark-bracket">]</span>
+          </span>
+          <span class="nav-wordmark-name">Sharvin Shah</span>
+        </a>
+        {inGuides && (
+          <>
+            <span class="nav-brand-sep" aria-hidden="true">/</span>
+            <a href="/guides" class="nav-section">Guides</a>
+          </>
+        )}
+      </div>
 
       <nav class="nav-links" aria-label="Primary">
         {navLinks.map(({ label, href }) => (
@@ -66,8 +80,6 @@ const navLinks = [
   const toggleBtn = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
   const mobileMenu = document.querySelector<HTMLElement>("[data-mobile-menu]");
 
-  // Contract the island once the page has scrolled past the hero's top edge.
-  // rAF-throttled so the scroll handler stays off the critical path.
   let ticking = false;
   const syncContracted = () => {
     island?.classList.toggle("is-contracted", window.scrollY > 24);
@@ -100,7 +112,7 @@ const navLinks = [
     mobileMenu?.classList.toggle("is-open", isOpen);
     toggleBtn.classList.toggle("is-open", isOpen);
     toggleBtn.setAttribute("aria-expanded", String(isOpen));
-    // Move focus into the menu so keyboard and VoiceOver users land there
+
     if (isOpen) mobileMenu?.querySelector<HTMLAnchorElement>("[data-mobile-link]")?.focus();
   });
 
@@ -108,12 +120,10 @@ const navLinks = [
     link.addEventListener("click", () => closeMenu());
   });
 
-  // Escape dismisses and returns focus to the toggle
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeMenu({ refocus: true });
   });
 
-  // Tapping outside the island dismisses it
   document.addEventListener("click", (event) => {
     if (!isMenuOpen()) return;
     const target = event.target as Node;
@@ -121,7 +131,6 @@ const navLinks = [
     closeMenu();
   });
 
-  // Resizing up to the desktop breakpoint leaves no orphaned open menu
   window.matchMedia("(min-width: 768px)").addEventListener("change", (e) => {
     if (e.matches) closeMenu();
   });

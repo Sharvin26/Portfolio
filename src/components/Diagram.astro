@@ -1,14 +1,12 @@
 ---
 interface Props {
   caption: string;
-  /** Width below which the diagram scrolls instead of shrinking further.
-      Without it the w-full SVG squashes its labels to ~5px on phones. */
+
   minWidth?: number;
 }
 
 const { caption, minWidth } = Astro.props;
 ---
-
 <figure class="my-10 border border-border bg-card p-6 md:p-8 not-prose">
   <div class="diagram-scroll" style={minWidth ? `--diagram-min: ${minWidth}px` : undefined}>
     <slot />

@@ -2,7 +2,8 @@
 title: "AI Agents: What They Actually Are and When to Build One"
 description: "A practitioner's guide to AI agents: the plan-act-observe loop, tool calling, memory architecture, real TypeScript code, and when a simple LLM call beats one."
 tldr: "An AI agent is an LLM that decides its own next step in a loop - plan, call a tool, observe the result, repeat - instead of following code you wrote in advance. That autonomy is powerful and also the exact thing that makes agents expensive, slow, and prone to confidently doing the wrong thing, so I only reach for one when a deterministic workflow genuinely can't do the job."
-publishDate: 2026-09-16
+publishDate: 2026-08-25
+readingOrder: 4
 primaryKeyword: "ai agents"
 category: "Agents"
 relatedSlugs: ["rag", "mcp", "llm-evaluation", "voice-ai-agents"]
@@ -31,9 +32,24 @@ faqs:
 
 ## What Makes Something an "Agent" (and What Doesn't)
 
+<div class="key-idea">
+<span class="key-idea-label">In one line</span>
+
+**An AI agent is a system where the model decides what to do next, in a loop, based on what it observes** - as opposed to a workflow, where you wrote the sequence of steps in advance and the model just fills in a blank.
+
+</div>
+
 "Agent" has become one of those words that means whatever the person saying it needs it to mean this quarter. So let me be precise about the definition I actually use when scoping client work: an AI agent is a system where the model itself decides what to do next, in a loop, based on what it observes - as opposed to a workflow where a human wrote the sequence of steps in advance and the LLM just fills in one blank.
 
 If you send a prompt and get back one response, that's a single LLM call, not an agent - no matter how good the prompt is. If your code calls the model, checks the output against a fixed `if/else`, and calls a different prompt next, that's a workflow - deterministic, testable, and often exactly what you should ship. An agent only enters the picture when the *model* is the one deciding whether to call a tool, which tool, with what arguments, and whether it has enough information to stop.
+
+**The same task, both ways.** A customer says order #4521 never arrived.
+
+*As a workflow*, you wrote the steps: look up the order, check the courier's status endpoint, and if it reads `lost`, issue a refund. Deterministic, testable, cheap, and it handles the case you designed for.
+
+*As an agent*, you hand the model the goal - "resolve this" - plus a set of tools, and it decides. It might check the courier, find the parcel was delivered to a neighbour, and go looking for a delivery photo you never anticipated it needing. It might also decide to issue three refunds.
+
+The difference is not capability. It is **who writes the control flow**, and therefore who is accountable when the path is wrong. Reach for the agent only when the path genuinely cannot be known in advance.
 
 That decision-making loop - plan the next step, call a tool, observe the result, and decide whether to loop again or answer - is shown in the diagram above. Everything in this guide assumes you've seen it: user request comes in, the model plans a step, calls a tool, observes what came back, and either loops again or breaks out to a final response once it judges it has enough to answer.
 
@@ -82,11 +98,16 @@ The row that matters commercially is the last two. A workflow and an agent can l
 
 Search for agent taxonomies and you'll find the five-type classification from Russell and Norvig's *Artificial Intelligence: A Modern Approach* everywhere, usually reprinted without comment. It predates LLMs by decades and it's still the standard academic framing, so it's worth knowing - but it's worth knowing what it does and doesn't tell you about the thing you're about to build:
 
-1. **Simple reflex agents** act only on the current percept, with condition-action rules. No memory, no model of the world. A thermostat.
-2. **Model-based reflex agents** keep internal state to track parts of the world they can't currently see.
-3. **Goal-based agents** choose actions by reasoning about which ones move them toward an explicit goal.
-4. **Utility-based agents** go further and choose between competing goals by maximising a utility measure - useful when outcomes are graded rather than pass/fail.
-5. **Learning agents** improve their own behaviour over time from feedback.
+<div class="viz">
+<span class="viz-title">The classic five-type agent taxonomy (Russell & Norvig)</span>
+<ol class="viz-ladder">
+<li class="viz-rung"><span class="viz-rung-name">Simple reflex agents</span><span class="viz-rung-note">Act only on the current percept, with condition-action rules. No memory, no model of the world. A thermostat.</span></li>
+<li class="viz-rung"><span class="viz-rung-name">Model-based reflex agents</span><span class="viz-rung-note">Keep internal state to track parts of the world they cannot currently see.</span></li>
+<li class="viz-rung"><span class="viz-rung-name">Goal-based agents</span><span class="viz-rung-note">Choose actions by reasoning about which ones move them toward an explicit goal. Nearly every LLM agent shipping today sits here.</span></li>
+<li class="viz-rung"><span class="viz-rung-name">Utility-based agents</span><span class="viz-rung-note">Choose between competing goals by maximising a utility measure - useful when outcomes are graded rather than pass/fail.</span></li>
+<li class="viz-rung"><span class="viz-rung-name">Learning agents</span><span class="viz-rung-note">Improve their own behaviour over time from feedback. An LLM agent is not one of these unless you built an explicit feedback and fine-tuning loop.</span></li>
+</ol>
+</div>
 
 Here's the part the reprints leave out: **almost every LLM agent shipping today is a goal-based agent**, and the taxonomy's boundaries blur badly when the "reasoning" is a language model. An LLM agent has implicit world knowledge in its weights (model-based), pursues a stated objective (goal-based), and can weigh tradeoffs when you ask it to (utility-ish) - but it does not learn from its own production runs unless you build an explicit feedback and fine-tuning loop, so it is *not* a learning agent in the classical sense, no matter how adaptive it feels in conversation.
 
@@ -137,7 +158,7 @@ Procedural memory is the one I'd caution against over-engineering. In nearly eve
 
 ### Planning strategies: ReAct and beyond
 
-The dominant pattern for the plan step is ReAct - interleaving explicit reasoning traces with actions, where the reasoning helps the model track its plan and handle unexpected tool outputs rather than acting open-loop ([Yao et al., 2022](https://arxiv.org/abs/2210.03629)). In modern Claude and GPT-class models, you mostly get this for free through extended/adaptive thinking plus tool use - the model reasons, calls a tool, reasons about the result, and decides its next move, without you hand-constructing a "Thought: ... Action: ... Observation: ..." prompt template the way the original 2022 implementations did. The underlying idea - interleave reasoning with action instead of committing to a full plan upfront - is still exactly what's happening under the hood, and it's worth reading the paper once to see why this beats pure chain-of-thought or pure action-only baselines on multi-step tasks.
+The dominant pattern for the plan step is ReAct - interleaving explicit reasoning traces with actions, where the reasoning helps the model track its plan and handle unexpected tool outputs rather than acting open-loop ([Shunyu Yao and colleagues, 2022](https://arxiv.org/abs/2210.03629)). In modern Claude and GPT-class models, you mostly get this for free through extended/adaptive thinking plus tool use - the model reasons, calls a tool, reasons about the result, and decides its next move, without you hand-constructing a "Thought: ... Action: ... Observation: ..." prompt template the way the original 2022 implementations did. The underlying idea - interleave reasoning with action instead of committing to a full plan upfront - is still exactly what's happening under the hood, and it's worth reading the paper once to see why this beats pure chain-of-thought or pure action-only baselines on multi-step tasks.
 
 Where I still write explicit planning logic by hand is in agents where the search space is large enough that letting the model freewheel step-by-step wastes calls - for those, an upfront decomposition step ("break this into a list of subtasks first, then execute each one") before entering the reactive loop tends to converge faster and more predictably than pure ReAct.
 
@@ -278,7 +299,20 @@ The parts worth calling out because they're easy to skip in a rushed prototype: 
 
 This is the question that decides whether a project ships, and it's chronically under-answered because the arithmetic is unintuitive. The key mechanic: **an agent re-sends its entire accumulated context on every step.** Your message list on step 8 contains the original request plus seven rounds of tool calls and results.
 
-So a single LLM call bills roughly one prompt. An eight-step agent bills something closer to the *sum* of a growing prompt eight times over - the tokens compound, they don't add linearly. An agent run is routinely one to two orders of magnitude more expensive than the single call it replaced, and the variance between a clean run and a confused one is enormous, because a confused agent takes more steps with a longer history on each one.
+So a single LLM call bills roughly one prompt. An eight-step agent bills something closer to the *sum* of a growing prompt eight times over - the tokens compound, they don't add linearly.
+
+<div class="viz">
+<span class="viz-title">Billed input tokens, relative to one single call</span>
+<dl class="viz-bars">
+<div class="viz-bar is-muted" style="--w: 1.3%"><dt class="viz-bar-label">One LLM call</dt><dd class="viz-bar-value">1×<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar" style="--w: 13%"><dt class="viz-bar-label">4-step agent</dt><dd class="viz-bar-value">10×<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar" style="--w: 46%"><dt class="viz-bar-label">8-step agent</dt><dd class="viz-bar-value">36×<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar" style="--w: 100%"><dt class="viz-bar-label">12-step agent</dt><dd class="viz-bar-value">78×<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+</dl>
+<span class="viz-caption">This is arithmetic, not a benchmark: if every step adds roughly one unit of context, step n re-sends n units, so the run bills n(n+1)/2. Your real numbers depend on how large your tool results are, and prompt caching changes the shape considerably - but the curve is quadratic either way, which is why a step cap is a cost control before it is a safety control.</span>
+</div>
+
+An agent run is routinely one to two orders of magnitude more expensive than the single call it replaced, and the variance between a clean run and a confused one is enormous, because a confused agent takes more steps with a longer history on each one.
 
 The levers I actually pull, in the order I reach for them:
 
@@ -323,3 +357,27 @@ Concretely, I push back toward a simpler architecture when:
 - You need hard latency or cost guarantees per request - an agent's variable step count makes both hard to bound tightly, and a workflow's fixed cost is a feature there, not a limitation.
 
 The specialized real-time case worth calling out separately is voice - a voice agent has to make tool-calling decisions inside a latency budget measured in a few hundred milliseconds, which changes the engineering tradeoffs enough that I treat it as its own discipline; see my [guide to voice AI agents](/guides/voice-ai-agents) if that's the shape of problem you're solving. For everything else, my default scoping question with a new client is still: what's the smallest, most boring architecture that gets this job done reliably, and does the task actually force us past it? Usually the honest answer is a single call or a workflow. When it isn't - when the steps genuinely can't be known in advance - that's when an agent, scoped tightly and evaluated properly, earns its keep. I go deeper on scoping this kind of work in the [Expertise section](/#expertise) of my site.
+
+## Memory Hooks
+
+The one-line version of everything above, for re-reading later rather than the whole guide.
+
+<div class="table-scroll">
+
+| Concept | The hook |
+|---|---|
+| **What an agent is** | The model decides what to do next, in a loop - you did not write the path |
+| **The sorting question** | Who writes the control flow? Known steps mean a workflow, not an agent |
+| **Agent vs workflow** | Agents are for unknown *paths*, not just unknown answers |
+| **The five types** | Academic taxonomy; nearly every shipped LLM agent is goal-based, and none are learning agents |
+| **Memory that matters** | Episodic is an event that stays true forever; semantic is a fact you overwrite |
+| **Procedural memory** | Usually just a well-maintained system prompt - do not build a subsystem for it |
+| **Why cost surprises** | Every step re-sends the whole history, so cost grows quadratically with step count |
+| **The first lever** | Cache the stable prefix; system prompt and tool definitions repeat on every single step |
+| **Step cap** | A cost control and a safety control in one line of code |
+| **Tool output** | Untrusted input - never let a tool result alone authorise a privileged action |
+| **The worst failure** | A confidently wrong agent reads exactly as fluent as a correct one |
+| **Evaluation** | Score the trajectory; a right answer reached through six wrong turns is still broken |
+| **The cheapest agent** | The one you did not build |
+
+</div>

@@ -1,15 +1,17 @@
 ---
-// Ordered application layer -> infrastructure, so the panel reads as a stack.
 const layers = [
-  { label: "AI / LLM", items: ["OpenAI", "Anthropic", "LangChain", "LlamaIndex", "pgvector", "vLLM"], accent: true },
-  { label: "Frontend", items: ["React", "Next.js", "TypeScript", "Tailwind CSS"] },
-  { label: "Mobile", items: ["React Native", "Flutter"] },
-  { label: "Backend", items: ["Node.js", "Express", "REST APIs", "Python"] },
-  { label: "Data", items: ["PostgreSQL", "MongoDB", "Redis", "Supabase"] },
-  { label: "Infra", items: ["AWS", "Docker", "Kubernetes", "Terraform"] },
+  { label: "Frontend", items: ["React", "Next.js", "Astro", "TypeScript", "Tailwind CSS", "shadcn/ui"] },
+  { label: "Mobile", items: ["React Native", "Expo", "gluestack-ui"] },
+  { label: "Backend", items: ["Node.js", "Express", "NestJS", "Hono"] },
+  { label: "Orchestration", items: ["LangChain", "LangGraph", "LangSmith", "Vercel AI SDK"] },
+
+  { label: "Gateways", items: ["Bedrock", "OpenRouter"] },
+  { label: "Models", items: ["OpenAI", "Anthropic", "Gemini", "Grok", "Llama"] },
+  { label: "Retrieval", items: ["pgvector", "Pinecone", "Voyage AI", "BM25"] },
+  { label: "Database", items: ["PostgreSQL", "MySQL", "SQLite", "MongoDB", "Redis", "DynamoDB"] },
+  { label: "Infra", items: ["AWS", "Supabase", "Vercel", "Cloudflare", "Docker", "Terraform"] },
 ];
 ---
-
 <section id="stack" class="py-20 md:py-28 border-b border-border">
   <div class="max-w-[1200px] mx-auto px-6">
     <div class="animate-on-scroll grid lg:grid-cols-[1fr_minmax(0,620px)] gap-12 lg:gap-16 items-center">
@@ -22,8 +24,9 @@ const layers = [
           The engineering <em class="text-primary italic">underneath.</em>
         </h2>
         <p class="text-base text-muted-foreground leading-relaxed max-w-[33rem]">
-          An AI feature is only as good as the system it ships inside. The AI layer is where I
-          spend my time now - the five below it are what make it survive contact with users.
+          An AI feature is only as good as the system it ships inside. This is the path a request
+          actually takes - the screen it starts on, the server that takes it, the layers that
+          answer it, and the data and infrastructure holding it all up.
         </p>
       </div>
 
@@ -36,7 +39,7 @@ const layers = [
 
         <ul class="stack-layers">
           {layers.map((layer) => (
-            <li class={`stack-layer${layer.accent ? " is-accent" : ""}`}>
+            <li class="stack-layer">
               <span class="stack-layer-label">{layer.label}</span>
               <span class="stack-layer-items">
                 {layer.items.map((item, i) => (

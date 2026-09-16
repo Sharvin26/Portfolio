@@ -7,11 +7,9 @@ import JsonLd from "../../components/schema/JsonLd.astro";
 import { breadcrumbSchema } from "../../lib/schema";
 
 const guides = (await getCollection("guides")).sort(
-  (a, b) => a.data.publishDate.getTime() - b.data.publishDate.getTime()
+  (a, b) => a.data.readingOrder - b.data.readingOrder
 );
 
-// Each card lists the guide's own H2s rather than a hand-maintained blurb, so
-// the hub can never drift out of sync with what the guide actually covers.
 const entries = await Promise.all(
   guides.map(async (guide) => {
     const { headings } = await render(guide);
@@ -26,20 +24,36 @@ const entries = await Promise.all(
 );
 
 const totalQuestions = entries.reduce((n, e) => n + e.questions, 0);
+const totalMinutes = entries.reduce((n, e) => n + e.minutes, 0);
+
+const stats = [
+  { value: String(entries.length), label: "Long-form guides" },
+  { value: String(totalQuestions), label: "Answered questions" },
+  { value: `${totalMinutes}`, label: "Minutes of reading" },
+];
+
+const questions = [
+  "Is RAG still relevant now that context windows hold a million tokens?",
+  "When is a workflow the right answer instead of an agent?",
+  "Is MCP the same thing as tool calling, and when is it overhead?",
+  "What's the difference between an eval and a benchmark?",
+  "What latency does a voice agent actually need to hit, and what does a call cost?",
+];
 
 const description =
   "Practitioner guides to RAG, the Model Context Protocol, LLM evaluation, AI agents and voice AI agents - architecture, failure modes, cost and production tradeoffs, written from shipped systems rather than theory.";
 ---
-
 <BaseLayout
   title="AI Engineering Guides | Sharvin Shah"
   description={description}
-  canonical="https://sharvinshah.com/guides"
+  canonical="https://www.sharvinshah.com/guides"
+  ogImage="https://www.sharvinshah.com/og-guides.png"
+  ogImageAlt="AI Engineering Guides - practitioner guides on production AI systems by Sharvin Shah"
 >
   <JsonLd
     data={breadcrumbSchema([
-      { name: "Home", url: "https://sharvinshah.com" },
-      { name: "Guides", url: "https://sharvinshah.com/guides" },
+      { name: "Home", url: "https://www.sharvinshah.com" },
+      { name: "Guides", url: "https://www.sharvinshah.com/guides" },
     ])}
   />
   <div class="flex min-h-screen flex-col bg-background">
@@ -50,33 +64,85 @@ const description =
         <h1 class="font-display text-4xl md:text-5xl font-semibold max-w-2xl mb-6">
           AI Engineering Guides
         </h1>
-        <div class="max-w-[36rem] flex flex-col gap-4 mb-14">
-          <p class="text-muted-foreground leading-relaxed">
+        <div class="grid lg:grid-cols-[1.6fr_1fr] gap-x-16 gap-y-8 mb-14">
+          <p class="text-lg md:text-xl leading-relaxed">
             Five long-form guides on the AI engineering problems I work in daily: retrieval-augmented
             generation, the Model Context Protocol, LLM evaluation, AI agents, and voice AI agents.
             Each one covers the architecture, the failure modes I've actually hit in production, what
-            it costs to run, and - the section most guides skip - when not to build the thing at all.
+            it costs to run, and the section most guides skip -{" "}
+            <em class="text-primary italic">when not to build the thing at all.</em>
           </p>
-          <p class="text-muted-foreground leading-relaxed">
+          <p class="text-sm text-muted-foreground leading-relaxed lg:border-l lg:border-border lg:pl-8">
             These are written from shipped client systems, not from a survey of other people's blog
             posts. Where I cite a number, it links to the primary source. Where I don't have data,
             I say so.
           </p>
         </div>
 
-        <div class="grid sm:grid-cols-2 gap-6">
-          {entries.map(({ guide, sections, minutes, questions }) => (
-            <a href={`/guides/${guide.id}`} class="card-hover flex flex-col gap-3 p-6 border border-border bg-card">
+        <dl class="grid grid-cols-3 border-y border-border mb-16">
+          {stats.map((stat, i) => (
+            <div class={`flex flex-col gap-1.5 py-7 pr-4 ${i > 0 ? "border-l border-border pl-5 sm:pl-8" : ""}`}>
+              <dd class="font-display italic font-medium text-primary text-4xl sm:text-5xl leading-none">
+                {stat.value}
+              </dd>
+              <dt class="font-mono text-[0.6875rem] font-semibold uppercase tracking-widest text-muted-foreground">
+                {stat.label}
+              </dt>
+            </div>
+          ))}
+        </dl>
+
+        <div class="mb-16">
+          <h2 class="font-display text-2xl md:text-3xl font-semibold mb-3">
+            What these guides <em class="text-primary italic">answer</em>
+          </h2>
+          <p class="text-sm text-muted-foreground leading-relaxed mb-8 max-w-[44rem]">
+            The questions that actually come up on client calls, rather than the ones that make
+            for tidy headings.
+          </p>
+          <ol class="grid md:grid-cols-2 gap-x-14">
+            {questions.map((question, i) => (
+              <li class="flex items-baseline gap-4 border-t border-border py-4">
+                <span class="font-mono text-xs font-semibold text-primary shrink-0" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span class="leading-relaxed">{question}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div class="mb-8">
+          <h2 class="font-display text-2xl md:text-3xl font-semibold mb-3">
+            The order I'd <em class="text-primary italic">read them in</em>
+          </h2>
+          <p class="text-sm text-muted-foreground leading-relaxed max-w-[44rem]">
+            Each guide stands on its own, but they build in this sequence - ground a model in
+            your own data, learn whether it actually worked, standardise how it reaches tools,
+            then hand it the loop and finally the phone line.
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-6">
+          {entries.map(({ guide, sections, minutes, questions }, i) => (
+            <a href={`/guides/${guide.id}`} class="card-hover flex flex-col gap-3 p-6 md:p-8 border border-border bg-card">
               <div class="flex items-baseline justify-between gap-3">
-                <span class="font-mono text-xs font-semibold tracking-widest uppercase text-primary">
-                  {guide.data.category}
+                <span class="flex items-baseline gap-3 min-w-0">
+                  <span class="font-mono text-xs font-semibold tracking-widest uppercase text-primary">
+                    {guide.data.category}
+                  </span>
+                  {i === 0 && (
+                    <span class="font-mono text-[0.625rem] font-semibold tracking-widest uppercase text-muted-foreground border border-border px-2 py-0.5 shrink-0">
+                      Start here
+                    </span>
+                  )}
                 </span>
                 <span class="font-mono text-[0.6875rem] tracking-wide text-muted-foreground shrink-0">
                   {minutes} min · {questions} questions
                 </span>
               </div>
-              <h2 class="font-display text-xl font-semibold leading-snug">{guide.data.title}</h2>
-              <p class="text-sm text-muted-foreground leading-relaxed">{guide.data.description}</p>
+              <h2 class="font-display text-xl md:text-2xl font-semibold leading-snug max-w-[46rem]">{guide.data.title}</h2>
+              <p class="text-sm text-muted-foreground leading-relaxed max-w-[46rem]">{guide.data.description}</p>
 
               {sections.length > 0 && (
                 <ul class="flex flex-wrap gap-x-2 gap-y-1.5 list-none p-0 m-0 mt-1">
@@ -88,24 +154,9 @@ const description =
                 </ul>
               )}
 
-              <span class="font-mono text-xs font-semibold text-primary mt-auto pt-2">Read the guide →</span>
+              <span class="font-mono text-xs font-semibold text-primary pt-2">Read the guide →</span>
             </a>
           ))}
-        </div>
-
-        <div class="mt-16 pt-10 border-t border-border max-w-[36rem]">
-          <h2 class="font-display text-2xl font-semibold mb-4">What these guides answer</h2>
-          <p class="text-muted-foreground leading-relaxed mb-4">
-            Across the five guides there are {totalQuestions} answered questions - the ones that
-            actually come up on client calls rather than the ones that make for tidy headings:
-          </p>
-          <ul class="flex flex-col gap-2 text-muted-foreground leading-relaxed list-none p-0 m-0">
-            <li>— Is RAG still relevant now that context windows hold a million tokens?</li>
-            <li>— When is a workflow the right answer instead of an agent?</li>
-            <li>— Is MCP the same thing as tool calling, and when is it overhead?</li>
-            <li>— What's the difference between an eval and a benchmark?</li>
-            <li>— What latency does a voice agent actually need to hit, and what does a call cost?</li>
-          </ul>
         </div>
       </div>
     </main>

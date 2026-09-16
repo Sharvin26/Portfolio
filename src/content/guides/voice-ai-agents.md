@@ -2,7 +2,8 @@
 title: "Voice AI Agents: Architecture, Latency, and Production Lessons"
 description: "A practitioner's guide to building voice AI agents: architecture, latency budgets, turn-taking, barge-in, evaluation metrics, and when a good IVR beats one."
 tldr: "Voice AI agents are the agent loop from text-based systems wrapped in a much tighter latency budget, plus a turn-taking layer that has to decide, in real time, who's allowed to talk. Most of the hard engineering isn't the LLM - it's ASR accuracy on names and numbers, barge-in handling, and shaving milliseconds out of a cascaded pipeline (or betting on a speech-to-speech model instead). Build one when voice is the interface your users actually want; don't build one just because it's possible."
-publishDate: 2026-09-16
+publishDate: 2026-09-14
+readingOrder: 5
 primaryKeyword: "voice ai agents"
 category: "Voice AI"
 relatedSlugs: ["rag", "mcp", "llm-evaluation", "ai-agents"]
@@ -16,18 +17,25 @@ faqs:
   - question: "What's the difference between a voice AI agent and a chatbot with text-to-speech bolted on?"
     answer: "A chatbot with TTS bolted on takes a full user turn, runs it through the same request/response loop as a text agent, then reads the answer aloud - there's no sense of real-time conversation. A genuine voice AI agent has to handle streaming partial transcripts, decide when the caller has actually finished speaking (endpointing), allow the caller to interrupt it mid-sentence (barge-in), and start generating a response before it has the complete final transcript. The turn-taking and interruption layer is the part that's missing when someone just pipes a chat agent's output into a TTS API."
   - question: "What latency should I target for a voice AI agent?"
-    answer: "Conversational speech science puts the natural human turn-taking gap at a mode of 0-200ms, with anything past roughly 700ms read as a meaningful pause rather than normal timing (Stivers et al., 2009, PNAS). In practice, most production cascaded pipelines (ASR -> LLM -> TTS) target well under a second from end-of-speech to first audio out, and speech-to-speech models exist specifically to get closer to that natural range. Anything that regularly clears 1.5-2 seconds will feel broken to callers, regardless of how good the answer is."
+    answer: "Conversational speech science puts the natural human turn-taking gap at a mode of 0-200ms, with anything past roughly 700ms read as a meaningful pause rather than normal timing (Tanya Stivers and colleagues, 2009, PNAS). In practice, most production cascaded pipelines (ASR -> LLM -> TTS) target well under a second from end-of-speech to first audio out, and speech-to-speech models exist specifically to get closer to that natural range. Anything that regularly clears 1.5-2 seconds will feel broken to callers, regardless of how good the answer is."
   - question: "Should I build a voice agent with a cascaded ASR-LLM-TTS pipeline or a speech-to-speech model?"
     answer: "Cascaded pipelines give you a text transcript at every step, which means you can log, guardrail, and swap components independently - useful if you need to bolt on retrieval or strict business logic. Speech-to-speech (realtime multimodal) models like OpenAI's gpt-realtime or Google's Gemini Live API skip the discrete ASR/TTS stages entirely, which cuts latency and preserves tone/prosody, but gives you less visibility into exactly what the model 'heard.' Most teams building anything with compliance or accuracy requirements start cascaded and only move to speech-to-speech once they've proven out the conversation design."
   - question: "How do voice agents handle interruptions (barge-in)?"
     answer: "A voice activity detection (VAD) layer sits between the caller's audio and the agent, watching for speech energy while the agent is talking. When it fires, the client (or the realtime API) truncates the agent's in-flight response, stops sending queued audio to the caller, and the agent has to decide whether to abandon its answer, shorten it, or acknowledge and re-route. OpenAI's Realtime API and Google's Gemini Live API both expose this as an explicit event your application code has to handle, not something that happens automatically for free."
   - question: "How much does it cost to run a production voice AI agent?"
-    answer: "It depends heavily on architecture. Using OpenAI's Realtime API directly, audio input runs $32 per million tokens and audio output $64 per million tokens for the gpt-realtime-2.1 model (per OpenAI's published pricing) - roughly 600 input tokens and 1,200 output tokens per minute of audio, so a minute of back-and-forth conversation lands in the low tens of cents. A cascaded pipeline adds separate ASR and TTS vendor costs on top of LLM tokens, plus telephony minutes if you're on a phone network. Cost scales with call volume and average handle time, so it needs to be modeled per use case, not assumed from a demo."
+    answer: "It depends heavily on architecture. Using OpenAI's Realtime API directly, audio input runs $32 per million tokens and audio output $64 per million tokens for the gpt-realtime-2.1 model (per OpenAI's published pricing). How many tokens a minute of speech actually costs depends on the audio encoding and how much of the minute is silence, and OpenAI does not publish a fixed rate - measure it on your own traffic rather than trusting a rule of thumb. A cascaded pipeline adds separate ASR and TTS vendor costs on top of LLM tokens, plus telephony minutes if you're on a phone network. Cost scales with call volume and average handle time, so it needs to be modeled per use case, not assumed from a demo."
   - question: "When should I not build a voice AI agent?"
     answer: "Skip it when the task is better served by structured input - a well-designed IVR with DTMF menus is faster and more reliable for narrow, high-volume tasks like 'pay my bill' or 'check my balance.' Skip it when your users are already happy typing, since a text chat agent has none of the latency, ASR-error, or interruption-handling problems voice introduces. And skip it when the cost of a misheard entity is high (say, a wrong account number triggering a wire transfer) and you don't yet have strong confirmation and fallback patterns in place - ship the text agent first, prove the logic, then add voice."
 ---
 
 ## What a Voice AI Agent Actually Is
+
+<div class="key-idea">
+<span class="key-idea-label">In one line</span>
+
+**A voice AI agent is the agent loop running inside a live audio stream**, where the user's turn is not a discrete event the way a sent message is - so the system has to decide, continuously and in real time, who is allowed to talk.
+
+</div>
 
 A voice AI agent is not a text agent with a text-to-speech step glued onto the end. That's the shortcut a lot of teams take first, and it's obvious to callers within one turn: the pauses are too long, the agent talks over you or can't be interrupted, and the whole thing feels like leaving a voicemail and waiting for a reply.
 
@@ -43,7 +51,7 @@ I've shipped both text and voice agents for clients, and the honest answer to "w
 
 ### The latency budget is brutal
 
-Human conversation has a well-studied rhythm. A cross-linguistic study of ten languages found that the most common (modal) gap between one person finishing a turn and the other starting is between 0 and 200ms, with an overall mode of 0ms across languages - and gaps beyond roughly 700ms start getting interpreted as meaningful (a hesitation, a "no," a dispreferred answer) rather than just normal timing ([Stivers et al., 2009, PNAS](https://pmc.ncbi.nlm.nih.gov/articles/PMC2705608/)). That's the bar callers are unconsciously holding your agent to. You will not hit 200ms with a cloud-hosted, tool-calling LLM agent today, and you don't need to - but every additional hundred milliseconds past roughly a second of end-to-end response time is spent instead of banked, and callers start talking over the agent, repeating themselves, or hanging up.
+Human conversation has a well-studied rhythm. A cross-linguistic study of ten languages found that the most common (modal) gap between one person finishing a turn and the other starting is between 0 and 200ms, with an overall mode of 0ms across languages - and gaps beyond roughly 700ms start getting interpreted as meaningful (a hesitation, a "no," a dispreferred answer) rather than just normal timing ([Tanya Stivers and colleagues, 2009, PNAS](https://pmc.ncbi.nlm.nih.gov/articles/PMC2705608/)). That's the bar callers are unconsciously holding your agent to. You will not hit 200ms with a cloud-hosted, tool-calling LLM agent today, and you don't need to - but every additional hundred milliseconds past roughly a second of end-to-end response time is spent instead of banked, and callers start talking over the agent, repeating themselves, or hanging up.
 
 A text chat agent can take two or three seconds to "think" and the user barely notices, because reading is asynchronous and there's a visible loading state. A phone call has no loading spinner. Silence on a phone line reads as "did the call drop," "is anyone there," or "this isn't working" almost immediately.
 
@@ -51,11 +59,21 @@ A text chat agent can take two or three seconds to "think" and the user barely n
 
 Two different numbers get quoted in this conversation and conflating them causes a lot of confused engineering.
 
-**Network latency** is governed by ITU-T Recommendation [G.114](https://www.itu.int/rec/T-REC-G.114), which sets **150 ms one-way** as the upper bound for transmission delay in a conversation where users are satisfied, with quality degrading progressively beyond that. That's a budget for *the network carrying the audio* — it says nothing about a model thinking.
+**Network latency** is governed by ITU-T Recommendation [G.114](https://www.itu.int/rec/T-REC-G.114), which sets **150 ms one-way** as the upper bound for transmission delay in a conversation where users are satisfied, with quality degrading progressively beyond that. That's a budget for *the network carrying the audio* - it says nothing about a model thinking.
 
 **Response latency** is the number that decides whether your agent feels human: the gap between the caller finishing their sentence and the first audio of the reply reaching their ear. The conversational research cited above puts natural human turn gaps at a mode near 0-200 ms, with delays past roughly 700 ms starting to carry social meaning.
 
-Here's the uncomfortable arithmetic: G.114's entire 150 ms network budget is already a meaningful fraction of a natural turn gap, and that's *before* ASR finalises, before the LLM produces a first token, and before TTS synthesises a first phoneme. Which is why the working target I give clients is **sub-800 ms perceived response time, with 1.2 s as the point where call quality visibly degrades** — not 200 ms. Anyone promising human-parity turn timing on a cloud-hosted tool-calling agent is quoting the wrong number.
+<div class="viz">
+<span class="viz-title">Perceived response time, and what each threshold means</span>
+<dl class="viz-bars">
+<div class="viz-bar is-muted" style="--w: 17%"><dt class="viz-bar-label">Natural human turn gap</dt><dd class="viz-bar-value">0-200 ms<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar is-muted" style="--w: 13%"><dt class="viz-bar-label">G.114 one-way network budget alone</dt><dd class="viz-bar-value">150 ms<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar" style="--w: 58%"><dt class="viz-bar-label">Delay starts carrying social meaning</dt><dd class="viz-bar-value">~700 ms<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar" style="--w: 67%"><dt class="viz-bar-label">The target I give clients</dt><dd class="viz-bar-value">&lt;800 ms<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar" style="--w: 100%"><dt class="viz-bar-label">Call quality visibly degrades</dt><dd class="viz-bar-value">1.2 s<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+</dl>
+<span class="viz-caption">The uncomfortable arithmetic: G.114's entire network budget is already a meaningful fraction of a natural turn gap, and that is <em>before</em> ASR finalises, before the LLM produces a first token, and before TTS synthesises a first phoneme. Anyone promising human-parity turn timing on a cloud-hosted tool-calling agent is quoting the network number, not the response number.</span>
+</div>
 
 ### A Realistic Latency Budget
 
@@ -65,7 +83,7 @@ Where the time actually goes on a cascaded pipeline, and what you can do about e
 
 | Stage | What's happening | Typical lever |
 |---|---|---|
-| **Endpointing / VAD** | Deciding the caller actually stopped | Often the biggest single win — aggressive endpointing cuts dead air, at the cost of interrupting people who pause mid-thought |
+| **Endpointing / VAD** | Deciding the caller actually stopped | Often the biggest single win - aggressive endpointing cuts dead air, at the cost of interrupting people who pause mid-thought |
 | **ASR finalisation** | Converting audio to committed text | Start reasoning on stable partials instead of waiting for the final transcript |
 | **Network to model** | Getting the request to the LLM | Co-locate your relay with the model region; remove every hop you control |
 | **LLM time-to-first-token** | The model beginning its reply | Smaller/faster model, shorter system prompt, prompt caching; tool calls add a *whole extra round trip* |
@@ -96,7 +114,7 @@ The diagram above shows the shape every voice agent takes at some level: caller 
 
 This is still the most common production architecture, and for good reason: every stage produces an inspectable artifact. You get a text transcript from ASR, a text response (plus tool calls) from the LLM, and audio from TTS - which means you can log, evaluate, and guardrail at each boundary independently.
 
-- **ASR**: streaming speech-to-text, ideally with partial ("interim") results so the agent can start reasoning before the caller has finished the sentence. Word error rate (WER) varies noticeably by vendor and domain; independent benchmarking from Artificial Analysis puts Deepgram's Nova-3 model around 5.2% WER on their mixed real-world benchmark, which is representative of where the leading streaming ASR models currently sit on clean-ish audio ([Artificial Analysis, Deepgram Nova-3](https://artificialanalysis.ai/speech-to-text/models/deepgram)) - phone-quality audio, cross-talk, and heavy accents will push that meaningfully higher in practice.
+- **ASR**: streaming speech-to-text, ideally with partial ("interim") results so the agent can start reasoning before the caller has finished the sentence. Word error rate (WER) varies noticeably by vendor and domain. Artificial Analysis's independent leaderboard is the least partisan public comparison I know of, and the leading streaming models sit in the high single digits on its mixed real-world benchmark ([Artificial Analysis, Deepgram](https://artificialanalysis.ai/speech-to-text/models/deepgram)) - check it rather than quoting a figure from here, because the rankings and the numbers both move. Phone-quality audio, cross-talk, and heavy accents push all of them meaningfully higher in practice.
 - **Agent/LLM**: the same reasoning loop as a text [AI agent](/guides/ai-agents) - plan, call tools, decide when to respond vs. ask a clarifying question. A voice agent that looks up a caller's account balance or order status is doing [retrieval](/guides/rag) exactly the way a text RAG system does; the only difference is the input arrived as a transcript instead of typed text, and tool access is frequently wired up through [MCP](/guides/mcp) - OpenAI's Realtime API, for example, added support for calling remote MCP servers directly from a voice session ([OpenAI Realtime API launch notes](https://developers.openai.com/blog/realtime-api)).
 - **TTS**: streaming, sentence-chunked synthesis so audio starts playing before the full response has been generated - waiting for a complete LLM response before starting TTS is one of the easiest ways to blow your latency budget.
 
@@ -241,18 +259,24 @@ Voice economics differ from text in one structural way: **you're billed by the d
 
 There are four line items, and teams routinely model only the first:
 
-1. **The model.** For speech-to-speech, audio tokens both ways. Using OpenAI's Realtime API directly, `gpt-realtime-2.1` prices audio input at $32 per million tokens and audio output at $64 per million tokens, at roughly 600 input and 1,200 output tokens per minute of audio ([OpenAI Realtime API pricing](https://developers.openai.com/api/docs/pricing)). For a cascaded pipeline, you're instead paying text-token rates plus separate ASR and TTS bills.
-2. **ASR and TTS**, if cascaded — typically billed per audio minute or per character, and easy to forget because they don't appear on your LLM invoice.
-3. **Telephony.** Per-minute carrier or CPaaS charges, plus phone number rental. Real money at volume and entirely outside your AI budget line.
-4. **Your own infrastructure.** Voice needs persistent connections for the duration of every call rather than stateless request handling, so concurrency — not request count — sizes your servers. A hundred simultaneous calls is a hundred open media sessions.
+<div class="viz">
+<span class="viz-title">The four line items in a voice agent's bill</span>
+<ol class="viz-ladder">
+<li class="viz-rung"><span class="viz-rung-name">The model</span><span class="viz-rung-note">For speech-to-speech, audio tokens both ways. Using OpenAI's Realtime API directly, <code>gpt-realtime-2.1</code> prices audio input at $32 per million tokens and audio output at $64 per million. The tokens a minute of speech consumes is not a published constant - it moves with encoding and silence - so measure it on your own calls. For a cascaded pipeline you pay text-token rates plus separate ASR and TTS bills instead.</span></li>
+<li class="viz-rung"><span class="viz-rung-name">ASR and TTS, if cascaded</span><span class="viz-rung-note">Typically billed per audio minute or per character, and easy to forget because they never appear on your LLM invoice.</span></li>
+<li class="viz-rung"><span class="viz-rung-name">Telephony</span><span class="viz-rung-note">Per-minute carrier or CPaaS charges, plus phone number rental. Real money at volume and entirely outside your AI budget line.</span></li>
+<li class="viz-rung"><span class="viz-rung-name">Your own infrastructure</span><span class="viz-rung-note">Voice needs a persistent connection for the whole call rather than stateless request handling, so concurrency - not request count - sizes your servers. A hundred simultaneous calls is a hundred open media sessions.</span></li>
+</ol>
+<span class="viz-caption">Model pricing from the <a href="https://developers.openai.com/api/docs/pricing">OpenAI Realtime API pricing page</a>; check it before quoting, since it moves. Teams routinely model only the first row.</span>
+</div>
 
 Model this **per call type**, never off a single demo call. "Check my order status" and "walk me through a return dispute" have completely different average handle times, and the blended average across your real call mix is the only number that predicts your invoice. The lever that moves cost most is average handle time itself: every latency improvement above is also a cost improvement, because a faster agent produces a shorter call.
 
-One economic note worth stating plainly to anyone building a business case: a voice agent's cost per call is usually well below a human agent's, and that gap is the entire commercial argument. But the comparison only holds if the agent resolves the call. An agent that handles 70% of a call and then escalates has cost you the agent *plus* the human, so containment rate — not cost per minute — is the metric that determines whether the economics work.
+One economic note worth stating plainly to anyone building a business case: a voice agent's cost per call is usually well below a human agent's, and that gap is the entire commercial argument. But the comparison only holds if the agent resolves the call. An agent that handles 70% of a call and then escalates has cost you the agent *plus* the human, so containment rate - not cost per minute - is the metric that determines whether the economics work.
 
 ## Production Considerations
 
-**Cost adds up faster than it looks in a demo.** Using OpenAI's Realtime API directly, `gpt-realtime-2.1` prices audio input at $32 per million tokens and audio output at $64 per million tokens, with roughly 600 input tokens and 1,200 output tokens per minute of audio ([OpenAI Realtime API pricing](https://developers.openai.com/api/docs/pricing)) - that's real money at call-center volume, and it's before you add telephony minutes (if you're bridging through a carrier or Twilio) or a separate ASR/TTS vendor bill if you go cascaded instead of speech-to-speech. Model this per call type (average handle time varies enormously between "check my order status" and "walk me through a return"), not off a single demo call.
+**Cost adds up faster than it looks in a demo.** Using OpenAI's Realtime API directly, `gpt-realtime-2.1` prices audio input at $32 per million tokens and audio output at $64 per million tokens ([OpenAI Realtime API pricing](https://developers.openai.com/api/docs/pricing)). How many tokens a minute of speech burns is not published and moves with encoding and silence, so measure it on your own calls - whatever it comes to, that's real money at call-center volume, and it's before you add telephony minutes (if you're bridging through a carrier or Twilio) or a separate ASR/TTS vendor bill if you go cascaded instead of speech-to-speech. Model this per call type (average handle time varies enormously between "check my order status" and "walk me through a return"), not off a single demo call.
 
 **Latency engineering for voice is its own discipline.** The highest-leverage moves I've seen work in practice: start the agent's reasoning on stable ASR partial transcripts rather than waiting for a finalized one, stream LLM output into TTS at sentence boundaries so synthesis overlaps generation instead of waiting for the full response, and keep your own server code (audio relaying, tool execution) out of the hot path wherever possible - every extra network hop between caller and model is milliseconds you don't get back.
 
@@ -265,7 +289,7 @@ If any of this - the architecture trade-offs, the cost modeling, the compliance 
 Transcript quality is table stakes, not the evaluation. A voice agent can produce a perfectly coherent-looking transcript and still be a bad product because the *timing* was wrong or it misheard the one number that mattered. The [evaluation](/guides/llm-evaluation) approach that actually predicts whether a voice agent will hold up in production looks at:
 
 - **Latency percentiles**, not averages - p50/p90/p99 time from end-of-caller-speech to first audio byte out. A good p50 with a bad p99 still produces a stream of frustrated callers.
-- **ASR word error rate**, measured specifically on your domain's audio conditions (phone-quality, your customers' typical accents and background noise) rather than a vendor's headline benchmark number - a model reporting ~5% WER on a general benchmark ([Artificial Analysis](https://artificialanalysis.ai/speech-to-text/models/deepgram)) can perform very differently on your actual call audio.
+- **ASR word error rate**, measured specifically on your domain's audio conditions (phone-quality, your customers' typical accents and background noise) rather than a vendor's headline benchmark number - a model reporting single-digit WER on a general benchmark ([Artificial Analysis](https://artificialanalysis.ai/speech-to-text/models/deepgram)) can perform very differently on your actual call audio.
 - **Entity accuracy specifically**, separate from overall WER - track error rates on the narrow set of things that matter (order numbers, names, dates) since these are disproportionately consequential and disproportionately likely to get misheard.
 - **Task completion rate** - did the call actually resolve what the caller needed, end to end, including any tool calls along the way - as distinct from "did the agent respond appropriately to each individual turn."
 - **Interruption/barge-in behavior** - rate of the agent talking over callers, rate of the agent getting cut off by false-positive VAD triggers.
@@ -284,3 +308,27 @@ I'll talk a client out of a voice agent more often than most vendors will, becau
 **Skip it, for now, when the cost of a misheard entity is high and your confirmation patterns aren't solid yet.** If a wrong number or a misheard name can trigger a financial transaction, a shipment, or an irreversible account change, the ROI on a voice interface is negative until you've proven out strict confirmation flows and tool-call guardrails - usually easier to prove first in a text agent, where you can inspect every input exactly as the user provided it, before adding the ASR layer that turns "did the user say this" into "did the system correctly hear the user say this."
 
 The honest litmus test I use with clients: if you can't articulate a specific reason voice is better than text for *this* task and *this* user population - not "it feels more advanced," an actual UX or accessibility reason - you're probably building it because it's possible, not because it's needed.
+
+## Memory Hooks
+
+The one-line version of everything above, for re-reading later rather than the whole guide.
+
+<div class="table-scroll">
+
+| Concept | The hook |
+|---|---|
+| **What voice adds** | The agent loop, minus the send button - the system decides when your turn ended |
+| **The two latencies** | G.114's 150 ms is the network carrying audio; perceived response time is the one callers judge |
+| **The working target** | Sub-800 ms perceived, 1.2 s is where calls audibly degrade - not 200 ms |
+| **The latency cliff** | Tool calls, not the model - one round of tool calling roughly doubles perceived response time |
+| **The highest-leverage fix** | Prefetch the likely lookup while the caller is still talking; almost nobody does it |
+| **Optimise first audio** | Once audio starts the caller is occupied - a slower total that starts sooner wins |
+| **Filler audio** | Buys a real 1-2 seconds, and reads as stalling if you spend it every turn |
+| **Barge-in** | Not a feature you add later - truncate queued audio the moment speech starts, or the agent talks over people |
+| **ASR errors** | Compound downstream; a misheard name enters the context as fact |
+| **Cascaded vs speech-to-speech** | Cascaded gives you inspectable text at every stage; speech-to-speech gives you latency |
+| **Why voice costs differ** | Billed by call duration, not question size - a rambling caller costs multiples of a brief one |
+| **The metric that decides it** | Containment rate. An agent that escalates at 70% cost you the agent *and* the human |
+| **The litmus test** | Name a UX or accessibility reason voice beats text here, or you are building it because it is possible |
+
+</div>

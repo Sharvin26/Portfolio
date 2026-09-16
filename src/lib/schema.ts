@@ -1,4 +1,4 @@
-const SITE_URL = "https://sharvinshah.com";
+const SITE_URL = "https://www.sharvinshah.com";
 
 export function personSchema() {
   return {
@@ -6,15 +6,14 @@ export function personSchema() {
     "@type": "Person",
     name: "Sharvin Shah",
     url: SITE_URL,
-    image: `${SITE_URL}/og-default.png`,
+    image: `${SITE_URL}/og-home-page.png`,
     jobTitle: "CEO & Chief AI Officer",
     worksFor: {
       "@type": "Organization",
       name: "MTechZilla",
       url: "https://www.mtechzilla.com",
     },
-    // Every profile that resolves to this same person. Search and AI systems
-    // use these to tie the entity together, so the list should be complete.
+
     sameAs: [
       "https://www.linkedin.com/in/sharvinshah/",
       "https://x.com/sharvinshah26",
@@ -36,10 +35,7 @@ export function organizationSchema() {
       name: "Sharvin Shah",
       url: SITE_URL,
     },
-    // No sameAs: the only URL here was linkedin.com/in/sharvinshah, which is a
-    // personal profile (/in/), not MTechZilla's company page (/company/).
-    // Claiming it as the organisation's own profile is a false entity link.
-    // Add the real company profiles here when they're to hand.
+
   };
 }
 

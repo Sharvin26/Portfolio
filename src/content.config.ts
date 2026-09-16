@@ -8,6 +8,8 @@ const guides = defineCollection({
     description: z.string(),
     tldr: z.string(),
     publishDate: z.coerce.date(),
+
+    readingOrder: z.number().int().positive(),
     updatedDate: z.coerce.date().optional(),
     primaryKeyword: z.string(),
     category: z.string(),

@@ -2,7 +2,8 @@
 title: "Retrieval-Augmented Generation: A Practitioner's Guide to RAG Architecture"
 description: "A practitioner's guide to retrieval augmented generation: architecture, chunking strategies, hybrid search, reranking, evaluation, and when to skip RAG."
 tldr: "Retrieval-augmented generation grounds an LLM's answers in your own data by retrieving relevant chunks at query time instead of retraining the model on them. I've shipped RAG systems for support, legal, and internal-knowledge use cases, and the parts that actually determine quality are chunking, hybrid search, and reranking - not which vector database logo is on the invoice. Skip the whole architecture when your corpus is small enough to just put in the prompt."
-publishDate: 2026-09-16
+publishDate: 2026-05-12
+readingOrder: 1
 primaryKeyword: "retrieval augmented generation"
 category: "RAG"
 relatedSlugs: ["mcp", "llm-evaluation", "ai-agents", "voice-ai-agents"]
@@ -24,7 +25,7 @@ faqs:
   - question: "Is ChatGPT a RAG model?"
     answer: "Not inherently. A base LLM is not a RAG system. But ChatGPT's browsing and file-upload features do implement the RAG pattern - they retrieve external content at query time and put it in context before generating. So the product uses retrieval-augmented generation as one of its features; the underlying model is not itself a RAG model."
   - question: "What are the four levels of RAG?"
-    answer: "The common maturity ladder is naive RAG (chunk, embed, top-k retrieve, stuff the prompt), advanced RAG (query rewriting, metadata filtering, hybrid search, reranking), modular RAG (retrieval as a swappable component with routing between indexes or strategies), and agentic RAG (retrieval as a tool an agent decides when and how to call). Gao et al.'s 2023 survey formalises the first three; agentic RAG is the practice-driven fourth. Most failed RAG projects I review built level one and concluded the pattern doesn't work."
+    answer: "The common maturity ladder is naive RAG (chunk, embed, top-k retrieve, stuff the prompt), advanced RAG (query rewriting, metadata filtering, hybrid search, reranking), modular RAG (retrieval as a swappable component with routing between indexes or strategies), and agentic RAG (retrieval as a tool an agent decides when and how to call). Yunfan Gao and colleagues' 2023 survey formalises the first three; agentic RAG is the practice-driven fourth. Most failed RAG projects I review built level one and concluded the pattern doesn't work."
   - question: "Can a RAG system be attacked through its own documents?"
     answer: "Yes, and it is the RAG-specific risk teams most often miss. If anything that can be influenced from outside reaches your index - customer-written tickets, scraped pages, shared documents - an attacker can plant text engineered to be retrieved and then obeyed by the model. OWASP covers this as prompt injection and data poisoning in its GenAI Top 10. Defend it by structuring prompts so retrieved text is clearly data rather than instructions, restricting which sources can write into the index, and requiring a separate authorization check before any retrieved content triggers a privileged action."
   - question: "How do I evaluate whether my RAG system is actually working?"
@@ -33,7 +34,14 @@ faqs:
 
 ## What Retrieval-Augmented Generation Actually Is
 
-Retrieval-augmented generation is a pattern, not a product: at query time, you retrieve a handful of relevant pieces of your own data and insert them into the prompt before the LLM generates its answer. The term comes from Lewis et al.'s 2020 paper, [*Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks*](https://arxiv.org/abs/2005.11401), which combined a pretrained sequence-to-sequence model with a neural retriever over a Wikipedia index and showed it beat purely parametric models on open-domain QA while producing more specific, factual answers. Six years later the core idea hasn't changed, even though the tooling around it - embeddings, vector databases, rerankers - has matured a lot.
+<div class="key-idea">
+<span class="key-idea-label">In one line</span>
+
+**Retrieval-augmented generation (RAG) fetches a handful of relevant pieces of your own data at query time and puts them in the prompt**, so the model answers from your facts instead of from whatever it memorised during training.
+
+</div>
+
+Retrieval-augmented generation is a pattern, not a product: at query time, you retrieve a handful of relevant pieces of your own data and insert them into the prompt before the LLM generates its answer. The term comes from Patrick Lewis and colleagues' 2020 paper, [*Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks*](https://arxiv.org/abs/2005.11401), which combined a pretrained sequence-to-sequence model with a neural retriever over a Wikipedia index and showed it beat purely parametric models on open-domain QA while producing more specific, factual answers. Six years later the core idea hasn't changed, even though the tooling around it - embeddings, vector databases, rerankers - has matured a lot.
 
 The reason RAG stuck as the default pattern for "make an LLM answer questions about our stuff" is that it separates two concerns that used to be tangled together: what the model knows how to do (reason, write, summarize) versus what it knows about (your product docs, your codebase, your support history). Fine-tuning bakes facts into weights, which means every time your knowledge base changes, you're looking at a retraining cycle. RAG keeps facts in an index you can update in seconds. That's the whole pitch, and it holds up in production more often than not.
 
@@ -71,12 +79,17 @@ On cost, the comparison is less about headline numbers than about *shape*. Fine-
 
 ### The Four Levels of RAG Maturity
 
-Gao et al.'s survey [*Retrieval-Augmented Generation for Large Language Models*](https://arxiv.org/abs/2312.10997) organises the field into three paradigms, and practice has since added a fourth. This is a useful ladder for figuring out where a given system actually sits:
+Yunfan Gao and colleagues' survey [*Retrieval-Augmented Generation for Large Language Models: A Survey*](https://arxiv.org/abs/2312.10997) organises the field into three paradigms, and practice has since added a fourth. This is a useful ladder for figuring out where a given system actually sits:
 
-1. **Naive RAG** - chunk, embed, retrieve top-k by cosine similarity, stuff into the prompt. This is the tutorial version, and it's where most stalled projects are stuck.
-2. **Advanced RAG** - adds pre-retrieval and post-retrieval steps: query rewriting, metadata filtering, hybrid search, reranking. Everything in the architecture section above lives here, and it's where the bulk of real quality gains come from.
-3. **Modular RAG** - retrieval becomes a swappable component in a larger pipeline, with routing between multiple indexes or search strategies depending on the query.
-4. **Agentic RAG** - the retrieval step is no longer a fixed pipeline stage but a *tool* an agent decides to call, possibly several times, reformulating its query between attempts.
+<div class="viz">
+<span class="viz-title">The four levels of RAG maturity</span>
+<ol class="viz-ladder">
+<li class="viz-rung"><span class="viz-rung-name">Naive RAG</span><span class="viz-rung-note">Chunk, embed, retrieve top-k by cosine similarity, stuff into the prompt. The tutorial version, and where most stalled projects are stuck.</span></li>
+<li class="viz-rung"><span class="viz-rung-name">Advanced RAG</span><span class="viz-rung-note">Adds pre- and post-retrieval steps: query rewriting, metadata filtering, hybrid search, reranking. Everything in the architecture section below lives here, and it is where the bulk of real quality gains come from.</span></li>
+<li class="viz-rung"><span class="viz-rung-name">Modular RAG</span><span class="viz-rung-note">Retrieval becomes a swappable component in a larger pipeline, routing between multiple indexes or search strategies depending on the query.</span></li>
+<li class="viz-rung"><span class="viz-rung-name">Agentic RAG</span><span class="viz-rung-note">Retrieval is no longer a fixed pipeline stage but a tool an agent decides to call, possibly several times, reformulating its query between attempts.</span></li>
+</ol>
+</div>
 
 Most teams who tell me "RAG didn't work for us" built level 1 and concluded the pattern was broken. It usually wasn't.
 
@@ -88,11 +101,32 @@ The flow shown in the diagram above - user query, embed and retrieve, rerank, LL
 
 Chunking is the least glamorous part of RAG architecture and the part that determines your ceiling on retrieval quality more than model choice or vector database choice ever will. The mistake I see most often is picking a fixed token count (say, 512 tokens) and splitting blindly, which routinely severs a sentence - or an entire idea - across two chunks, so neither chunk retrieves well on its own.
 
+**One page, both failure modes.** Here is the shape of a refund clause I have indexed on real client corpora:
+
+> **Refunds.** Orders can be returned within 7 days with proof of purchase. Refunds are processed in 3 business days. During sale periods, refund processing takes up to 7 business days. Members return free of charge.
+
+*Chunked too big*, the whole policy page becomes one 2,000-word chunk covering refunds, delivery, membership and opening hours. Its embedding is an average of four unrelated topics, so it sits near nothing in particular and a refund question never retrieves it.
+
+*Chunked too small*, split one sentence per chunk, "refunds are processed in 3 business days" retrieves cleanly - and the sale-period exception, now a separate chunk, does not. The model answers "3 business days", cites its source, and is wrong for six weeks of the year.
+
+The second failure is the dangerous one, because nothing visibly breaks. The retrieval succeeded, the citation is real, and the answer is still incomplete.
+
 What I do in practice:
 
 - **Chunk by structure first, size second.** Split on headings, paragraphs, or code function boundaries, then only fall back to a hard token limit for oversized sections. A markdown document should split on `##` boundaries before it splits on token count.
 - **Keep chunks in the low hundreds of tokens, with overlap.** Small enough that a single chunk is topically coherent, with roughly 10-20% overlap between adjacent chunks so an idea that straddles a boundary still shows up whole in at least one chunk.
-- **Attach context the chunk would otherwise lose.** A chunk pulled from page 40 of a contract doesn't know it's a contract, or which section it's in. Anthropic's [Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) writeup addresses exactly this: prepending a short (50-100 token) LLM-generated summary of the chunk's place in the document before embedding it. In their internal benchmark, contextual embeddings alone cut the top-20-chunk retrieval failure rate from 5.7% to 3.7% (a 35% relative reduction); adding BM25 on top brought it to 2.9% (49% reduction); adding a reranking pass on top of that brought it to 1.9% - a 67% relative reduction over the naive baseline. That's the single most convincing chunking-quality data point I've seen published, and it matches what I've observed qualitatively on client corpora: the reranking pass usually buys you more than any embedding model swap.
+- **Attach context the chunk would otherwise lose.** A chunk pulled from page 40 of a contract doesn't know it's a contract, or which section it's in. Anthropic's [Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) writeup addresses exactly this: prepending a short (50-100 token) LLM-generated summary of the chunk's place in the document before embedding it. In their internal benchmark, each layer compounds on the last:
+
+<div class="viz">
+<span class="viz-title">Top-20 retrieval failure rate, Anthropic contextual retrieval benchmark</span>
+<dl class="viz-bars">
+<div class="viz-bar is-muted" style="--w: 100%"><dt class="viz-bar-label">Naive chunking + embeddings</dt><dd class="viz-bar-value">5.7%<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar" style="--w: 65%"><dt class="viz-bar-label">+ contextual embeddings</dt><dd class="viz-bar-value">3.7%<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar" style="--w: 51%"><dt class="viz-bar-label">+ BM25 hybrid search</dt><dd class="viz-bar-value">2.9%<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar" style="--w: 33%"><dt class="viz-bar-label">+ reranking pass</dt><dd class="viz-bar-value">1.9%<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+</dl>
+<span class="viz-caption">A 67% relative reduction over the naive baseline, and note where the steps are largest. This is the most convincing chunking-quality data point I have seen published, and it matches what I see qualitatively on client corpora: the reranking pass usually buys you more than any embedding model swap.</span>
+</div>
 
 ### Vector Database Embeddings: Picking a Store
 
@@ -105,7 +139,13 @@ The store you pick matters less than people assume, but it's not a non-decision:
 
 ### Hybrid Search & Reranking: Why Vector Search Alone Isn't Enough
 
-Pure vector search is excellent at paraphrase and synonym matching and surprisingly bad at exact strings - error codes, part numbers, proper nouns, anything where the literal characters matter more than the meaning. Hybrid search fixes this by running a sparse keyword search (typically BM25) alongside the dense vector search and fusing the two ranked lists into one.
+**A vector database returns the nearest chunk, never the right one.** It measures distance in embedding space; it does not reason about your question. Three distinct misses follow from that, and they have different fixes:
+
+**Miss 1 - the vocabulary gap.** The user asks "can I get a refund?" The policy chunk says "money is returned"; a delivery-charges chunk happens to use the literal word "refund" and wins on keyword overlap. *Fix: hybrid search.* Pure vector search is excellent at paraphrase and synonym matching and surprisingly bad at exact strings - error codes, part numbers, proper nouns, anything where the literal characters matter more than the meaning. Running a sparse keyword search (typically BM25) alongside the dense vector search and fusing the two ranked lists covers each method's blind spot with the other's strength.
+
+**Miss 2 - the question is too thin to locate anything.** "7 days from when?" is four words with almost no semantic content, so its embedding sits near everything and close to nothing. *Fix: query rewriting* - a cheap model expands the question using conversation history before it is ever embedded. This is also what makes follow-up questions work at all.
+
+**Miss 3 - the answer lives in a chunk the question never points at.** The user asks about their refund; the sale-period exception applies, but they have no idea the exception exists, so nothing in their wording aims at it. *There is no clean retrieval fix for this one.* You cannot phrase a query around a rule you do not know about. The real answer is letting the model search again after seeing the first result - which is the agentic RAG pattern, covered below.
 
 [Pinecone's hybrid search docs](https://docs.pinecone.io/guides/search/hybrid-search) frame it as combining "a keyword signal with a semantic signal in a single query," either by storing dense and sparse vectors in one index and weighting them client-side, or by querying two indexes and merging results. [Weaviate's hybrid search](https://docs.weaviate.io/weaviate/search/hybrid) exposes this as a single `alpha` parameter: `alpha = 1.0` is pure vector search, `alpha = 0.0` is pure BM25F keyword search, and anything in between blends the two - Weaviate's default fusion method (Relative Score Fusion since v1.24) combines the two using their actual similarity scores rather than just rank position.
 
@@ -249,6 +289,13 @@ If your RAG pipeline is one tool among several that an autonomous agent calls - 
 
 ## Evaluating a RAG System (Not Just the LLM)
 
+<div class="key-idea">
+<span class="key-idea-label">In one line</span>
+
+**A RAG system has two independent failure surfaces - retrieval and generation - and one end-to-end score cannot tell you which one broke.** Measure them separately or you will spend weeks tuning the wrong half.
+
+</div>
+
 The mistake I see teams make is evaluating a RAG system the same way they'd evaluate a plain chatbot - by eyeballing whether the final answer sounds right. That conflates two independent failure surfaces. A RAG system can fail because retrieval didn't find the right chunks, or because generation didn't use the chunks it was given correctly, and you need separate measurements to tell which one broke.
 
 For the retrieval half, build a labeled evaluation set - real queries mapped to the chunk IDs that should be retrieved for each - and measure:
@@ -269,7 +316,7 @@ This comes up constantly now that frontier models advertise context windows in t
 
 For small, static corpora, you often shouldn't - I say exactly that in the section below on when to skip RAG. But "just use long context" fails for three concrete reasons at any real scale:
 
-- **Attention is not uniform across the window.** Liu et al.'s [*Lost in the Middle*](https://arxiv.org/abs/2307.03172) showed that model performance is highest when relevant information sits at the very beginning or very end of the input context and degrades measurably when it's buried in the middle - and that this holds even for models explicitly built for long contexts. Filling a million-token window doesn't mean the model reads a million tokens equally well.
+- **Attention is not uniform across the window.** Nelson Liu and colleagues' [*Lost in the Middle*](https://arxiv.org/abs/2307.03172) showed that model performance is highest when relevant information sits at the very beginning or very end of the input context and degrades measurably when it's buried in the middle - and that this holds even for models explicitly built for long contexts. Filling a million-token window doesn't mean the model reads a million tokens equally well.
 - **You pay for every token, every query.** A million-token prompt billed on every request is a fundamentally different cost structure from retrieving six relevant chunks. Prompt caching softens this considerably for a stable corpus, but it doesn't make it free.
 - **You lose citations.** Retrieval gives you a defensible answer to "where did this come from?" Stuffing the corpus gives you a model assertion and nothing to point at.
 
@@ -294,3 +341,25 @@ RAG is not free architectural complexity, and I turn it down more often than peo
 **Your data changes so fast that indexing latency itself is the bottleneck.** If the answer depends on data that's seconds old - live pricing, live inventory - you likely want a direct API/tool call for that specific fact rather than routing it through an embedding-and-search pipeline built for relatively stable documents. This is a case for giving an agent a live-lookup tool instead of, or alongside, retrieval; see the [agents guide](/guides/ai-agents) for how that tool-selection decision typically gets made.
 
 **You don't have anyone who will own retrieval quality over time.** RAG systems degrade silently as source documents change, chunking assumptions stop matching new content types, and query patterns drift. If there's no one who's going to look at retrieval logs periodically, you're signing up for a system that gets quietly worse for months before anyone notices. That operational reality is as much a part of the "should we build this" decision as anything in the [expertise](/#expertise) I typically get called in for - the architecture is the easy 20%.
+
+## Memory Hooks
+
+The one-line version of everything above, for re-reading later rather than the whole guide.
+
+<div class="table-scroll">
+
+| Concept | The hook |
+|---|---|
+| **What RAG changes** | Fine-tuning changes how a model *behaves*; RAG changes what it *knows about* |
+| **Chunking** | The unit of everything downstream - the model never sees your documents, only chunks |
+| **The chunking question** | Never "what size?" but "what is one complete idea in *this* document?" |
+| **Retrieval** | A vector database returns the *nearest* chunk, never the *right* one |
+| **Miss 1 / 2 / 3** | Vocabulary gap → hybrid search · thin question → query rewriting · unknown rule → let the model search again |
+| **Reranking** | A cross-encoder reads query and chunk *together*; an embedding never did |
+| **The funnel** | Retrieve wide (20-50), judge carefully, keep few (4-6) |
+| **Lost in the middle** | More tokens in context is not more attention on them |
+| **Evaluation** | Two failure surfaces, two metrics - a passing end-to-end score hides which half broke |
+| **The index is an input** | Anything that can write into your corpus can write into your prompt |
+| **When to skip it** | Corpus small enough to paste, behaviour problems, second-fresh data, or nobody to own quality |
+
+</div>

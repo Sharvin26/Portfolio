@@ -5,18 +5,9 @@ import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
 
-const SITE = "https://sharvinshah.com";
+const SITE = "https://www.sharvinshah.com";
 const GUIDES_DIR = fileURLToPath(new URL("./src/content/guides", import.meta.url));
 
-/**
- * Last meaningful content change per guide slug, read from its own frontmatter.
- *
- * Google uses <lastmod> to schedule recrawls and largely ignores changefreq and
- * priority - but only while lastmod stays honest. So this reads the author's
- * declared updatedDate (falling back to publishDate) rather than build time,
- * which would otherwise mark every page as freshly changed on every deploy and
- * get the signal discounted site-wide.
- */
 function guideLastmod() {
   const dates = new Map();
 
@@ -40,8 +31,6 @@ function guideLastmod() {
 
 const lastmod = guideLastmod();
 
-// The hub is generated from the guides, so it genuinely changes whenever the
-// most recently touched guide does.
 const hubLastmod = lastmod.size
   ? new Date(Math.max(...[...lastmod.values()].map((d) => d.getTime())))
   : undefined;
@@ -62,8 +51,6 @@ export default defineConfig({
           item.priority = 0.8;
           item.changefreq = "monthly";
         } else if (item.url === `${SITE}/`) {
-          // Deliberately no lastmod: nothing on disk records when the homepage
-          // content last changed, and a guessed date is worse than none.
           item.priority = 1;
           item.changefreq = "weekly";
         }

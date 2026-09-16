@@ -27,7 +27,6 @@ const { guide } = Astro.props;
 const { Content, headings } = await render(guide);
 const DiagramComponent = diagrams[guide.id];
 ---
-
 <PillarLayout guide={guide} headings={headings}>
   {DiagramComponent && (
     <Fragment slot="diagram">

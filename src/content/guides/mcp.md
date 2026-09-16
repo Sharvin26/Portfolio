@@ -2,7 +2,8 @@
 title: "Model Context Protocol: A Practitioner's Guide to MCP"
 description: "A practitioner's guide to the Model Context Protocol: architecture, a working TypeScript server example, production failure modes, and when to skip MCP."
 tldr: "The Model Context Protocol standardizes how AI applications connect to tools, data, and prompts, so you write one server instead of a custom integration per model. It's the right call when multiple hosts or agents need to share the same tools; it's overkill for a single in-house function called by one model. I'll walk through the architecture, a working TypeScript server, and the failure modes that actually bite in production."
-publishDate: 2026-09-16
+publishDate: 2026-08-04
+readingOrder: 3
 primaryKeyword: "model context protocol"
 category: "MCP"
 relatedSlugs: ["rag", "llm-evaluation", "ai-agents", "voice-ai-agents"]
@@ -30,6 +31,13 @@ faqs:
 ---
 
 ## What MCP actually is, and why it exists
+
+<div class="key-idea">
+<span class="key-idea-label">In one line</span>
+
+**The Model Context Protocol (MCP) is an open standard for how an AI application connects to tools and data**, so you write one server per tool instead of one integration per tool *per application*.
+
+</div>
 
 The Model Context Protocol is an open standard for connecting AI applications to the tools, data, and prompt templates they need to be useful. Anthropic [open-sourced MCP in November 2024](https://www.anthropic.com/news/model-context-protocol), and it's since become the default answer to a problem every team building with LLMs eventually hits: you have N tools (databases, search indexes, internal APIs, file systems) and M places that want to call them (a chat app, an IDE, an agent runtime, a voice assistant). Without a shared protocol, you're writing N×M bespoke integrations, each with its own auth handling, schema format, and error semantics.
 
@@ -131,6 +139,17 @@ Say you have 3 AI applications - an internal chat tool, a coding agent, a suppor
 
 MCP makes it **N+M**. You write 5 MCP servers, one per system, and each of the 3 applications speaks the protocol. The sixth system is one new server that all three applications can use immediately. The fourth application is zero new connectors.
 
+<div class="viz">
+<span class="viz-title">Integrations to build and maintain: 3 AI applications, 5 systems</span>
+<dl class="viz-bars">
+<div class="viz-bar is-muted" style="--w: 83%"><dt class="viz-bar-label">Direct API integrations (N×M)</dt><dd class="viz-bar-value">15<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar" style="--w: 44%"><dt class="viz-bar-label">MCP servers + client integrations (N+M)</dt><dd class="viz-bar-value">8<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar is-muted" style="--w: 100%"><dt class="viz-bar-label">Add a 6th system, direct</dt><dd class="viz-bar-value">18<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+<div class="viz-bar" style="--w: 50%"><dt class="viz-bar-label">Add a 6th system, MCP</dt><dd class="viz-bar-value">9<span class="viz-bar-track"><span class="viz-bar-fill"></span></span></dd></div>
+</dl>
+<span class="viz-caption">The point is not that 8 is smaller than 15. It is the slope: every new system costs three connectors in the first model and one server in the second, and that gap widens for as long as the organisation keeps adding systems.</span>
+</div>
+
 That's the entire pitch, and it's worth being precise about what it *isn't*:
 
 - **MCP is not a replacement for your API.** The MCP server calls your API. You still need the API, the auth, and the business logic underneath.
@@ -148,6 +167,17 @@ No, and the terms get muddled constantly - including in vendor material that sho
 **MCP** is a *protocol* for where those tool schemas come from and who executes the resulting call. An MCP client fetches tool definitions from a server at runtime, passes them to the model as ordinary tool schemas, and routes the model's chosen call back to that server for execution.
 
 So they operate at different layers and compose rather than compete: **MCP is built on top of tool calling, not instead of it.** A model connected to twelve MCP servers is still doing plain tool calling - it simply didn't have those twelve tools hard-coded into the application. If someone asks you to choose between them, the question is malformed.
+
+<div class="viz">
+<span class="viz-title">One tool call, and which layer owns each step</span>
+<ol class="viz-flow">
+<li class="viz-step"><span class="viz-step-name">MODEL</span><span class="viz-step-note">Emits JSON naming a tool and its arguments. This is tool calling, and it is all the model ever does.</span></li>
+<li class="viz-step"><span class="viz-step-name">CLIENT</span><span class="viz-step-note">Routes that call to the server that advertised the tool. This is MCP.</span></li>
+<li class="viz-step"><span class="viz-step-name">SERVER</span><span class="viz-step-note">Authorises the call against the real user, then executes it. Also MCP.</span></li>
+<li class="viz-step"><span class="viz-step-name">YOUR API</span><span class="viz-step-note">Does the actual work. Unchanged, and still required.</span></li>
+</ol>
+<span class="viz-caption">Remove MCP and step 1 is identical - the tool schemas were just hard-coded into the application instead of discovered at runtime. MCP replaces where tools come from, never how the model asks for them.</span>
+</div>
 
 ### MCP vs. RAG
 
@@ -179,7 +209,7 @@ I've made the call wrong in both directions: over-engineered a single-tenant too
 
 The protocol's own [security best practices](https://modelcontextprotocol.io/specification/draft/basic/security_best_practices) document the risks that are structural rather than incidental. The ones I check for on every review:
 
-**Confused deputy.** Your MCP server holds credentials that are more privileged than the user driving the model. If the server executes whatever the model asks without checking whether *this* user is entitled to *this* action, the server becomes a deputy that launders the model's request into privileged access. The fix is authorization at the server, per request, against the calling user's identity - never a blanket service credential that the model can steer.
+**Confused deputy.** Take the `get_invoice_status` server above. It holds a database credential that can read every invoice in the system, while the person chatting to the model is a support agent who should only see invoices for their own accounts. If the server executes any invoice ID the model asks for, the model has effectively been handed the database credential - and the model will happily ask for `INV-00001` if a customer tells it to. Your MCP server holds credentials that are more privileged than the user driving the model. If the server executes whatever the model asks without checking whether *this* user is entitled to *this* action, the server becomes a deputy that launders the model's request into privileged access. The fix is authorization at the server, per request, against the calling user's identity - never a blanket service credential that the model can steer.
 
 **Token passthrough.** Accepting a token that wasn't issued for your server and forwarding it upstream defeats audit trails and lets a token minted for one audience be replayed against another. The spec explicitly prohibits this. Validate that a token was issued *for you* before you act on it.
 
@@ -231,3 +261,26 @@ Before I call an MCP integration production-ready, I check:
 6. **Access logging** - can I reconstruct, after the fact, exactly which tools were called, with what arguments, by which agent session? If the answer is no, I don't consider the integration observable enough to ship.
 
 This is the kind of systems work - evals, agent architecture, tool trust boundaries - that sits at the center of the [AI engineering work I take on](/#expertise). MCP is a genuinely useful piece of infrastructure once you're past the point of one tool and one model, but it's infrastructure, and it deserves the same production scrutiny you'd give any other service you're putting between an LLM and the systems it can affect.
+
+## Memory Hooks
+
+The one-line version of everything above, for re-reading later rather than the whole guide.
+
+<div class="table-scroll">
+
+| Concept | The hook |
+|---|---|
+| **What MCP is** | A distribution mechanism for tools, not a new way for models to call them |
+| **The pitch** | N×M bespoke integrations collapse to N+M |
+| **The test** | Worth it exactly when a tool has more than one consumer - same test as extracting a shared library |
+| **MCP vs tool calling** | Built *on top of* tool calling, not instead of it; the choice is malformed |
+| **MCP vs RAG** | RAG decides what goes in the prompt; MCP decides how the client reaches the thing producing it |
+| **The three primitives** | Tools act · resources are read · prompts are templates |
+| **Transport** | Same box → stdio · many consumers → Streamable HTTP, and you now own a service |
+| **Discovery is not static** | A server can change its tool list mid-session; never hardcode against it |
+| **Confused deputy** | Authorise per request against the *calling user*, never a blanket service credential |
+| **Tool descriptions** | Attacker-controlled text that goes straight into the model's context - review them like dependencies |
+| **Tool results** | Untrusted input, always - structure prompts so they are unmistakably data |
+| **The real cost** | Every connected server spends input tokens on schemas before the model does anything useful |
+
+</div>

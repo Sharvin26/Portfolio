@@ -1,36 +1,37 @@
 ---
-import ExpertiseMap from "./diagrams/ExpertiseMap.astro";
+import { getCollection } from "astro:content";
 
-// The five topics with a dedicated guide get a card and a short line.
-const guides = [
-  {
+const cards: Record<string, { label: string; description: string }> = {
+  rag: {
     label: "RAG",
-    href: "/guides/rag",
     description: "Grounding model outputs in your own data instead of hoping the weights remember it.",
   },
-  {
-    label: "AI Agents",
-    href: "/guides/ai-agents",
-    description: "Systems that plan, call tools, and act - with real error handling, not a happy-path demo.",
-  },
-  {
-    label: "MCP",
-    href: "/guides/mcp",
-    description: "The emerging standard for wiring tools and data sources into any model client.",
-  },
-  {
+  "llm-evaluation": {
     label: "LLM Evaluation",
-    href: "/guides/llm-evaluation",
     description: "Measuring whether a change made the system better, not just different.",
   },
-  {
+  mcp: {
+    label: "MCP",
+    description: "The emerging standard for wiring tools and data sources into any model client.",
+  },
+  "ai-agents": {
+    label: "AI Agents",
+    description: "Systems that plan, call tools, and act - with real error handling, not a happy-path demo.",
+  },
+  "voice-ai-agents": {
     label: "Voice AI Agents",
-    href: "/guides/voice-ai-agents",
     description: "Agents that hold a real-time conversation, not a chatbot read aloud.",
   },
-];
+};
 
-// Everything else, as scannable chips rather than 28 more rows of prose.
+const guides = (await getCollection("guides"))
+  .sort((a, b) => a.data.readingOrder - b.data.readingOrder)
+  .map((guide) => ({
+    href: `/guides/${guide.id}`,
+    label: cards[guide.id]?.label ?? guide.data.category,
+    description: cards[guide.id]?.description ?? guide.data.description,
+  }));
+
 const clusters = [
   {
     label: "Retrieval & Knowledge",
@@ -86,7 +87,6 @@ const clusters = [
   },
 ];
 ---
-
 <section id="expertise" class="py-20 md:py-28 border-b border-border">
   <div class="max-w-[1200px] mx-auto px-6">
     <div class="animate-on-scroll">
@@ -96,17 +96,13 @@ const clusters = [
           <div class="section-label">Expertise</div>
         </div>
         <h2 class="font-display text-3xl md:text-[2.75rem] font-medium leading-[1.1]">
-          Where I <em class="text-primary italic">go deep.</em>
+          The stack, <em class="text-primary italic">layer by layer.</em>
         </h2>
         <p class="text-base text-muted-foreground leading-relaxed max-w-[33rem]">
           Retrieval sits at the base, agents build on it, voice is one interface onto it - and
           evaluation and infrastructure wrap the whole thing. Five of these go deep enough to
           deserve their own guide.
         </p>
-      </div>
-
-      <div class="mb-16">
-        <ExpertiseMap />
       </div>
 
       <div class="mb-16">

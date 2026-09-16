@@ -28,20 +28,16 @@
 }
 
 :root {
-  /* Tells Safari/iOS to render scrollbars, form controls and pickers dark,
-     and stops the white flash before first paint. */
   color-scheme: dark;
 
   --radius: 0rem;
 
-  /* Amber/gold accent scale (OKLCH) - the site's single accent color */
   --accent-700: oklch(0.55 0.15 65);
   --accent-600: oklch(0.66 0.17 68);
   --accent-500: oklch(0.77 0.16 71);
   --accent-400: oklch(0.85 0.12 78);
   --accent-300: oklch(0.92 0.06 82);
 
-  /* Warm espresso neutral scale - dark theme only, no light variant */
   --neutral-900: oklch(0.14 0.012 45);
   --neutral-800: oklch(0.19 0.014 45);
   --neutral-700: oklch(0.25 0.015 46);
@@ -51,7 +47,6 @@
   --neutral-300: oklch(0.76 0.01 65);
   --neutral-100: oklch(0.97 0.006 80);
 
-  /* Semantic tokens */
   --background: var(--neutral-900);
   --foreground: var(--neutral-100);
   --card: var(--neutral-800);
@@ -77,7 +72,7 @@
   }
   html {
     overflow-x: clip;
-    /* Stop iOS Safari inflating body text on orientation change */
+
     -webkit-text-size-adjust: 100%;
   }
   body {
@@ -104,8 +99,6 @@
   }
 }
 
-/* ─── Shiki code blocks (css-variables theme, mapped to site tokens) ── */
-
 :root {
   --astro-code-foreground: var(--neutral-100);
   --astro-code-background: var(--neutral-800);
@@ -128,27 +121,9 @@ pre.astro-code {
   line-height: 1.6;
 }
 
-/* ─── Keyframes ──────────────────────────────────────────── */
-
-@keyframes word-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
-}
-
-@keyframes scale-in-x {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
 }
 
 @keyframes fade-up {
@@ -162,24 +137,9 @@ pre.astro-code {
   }
 }
 
-/* ─── Hero animations (load-triggered) ──────────────────── */
-
-.animate-word-reveal {
-  display: inline-block;
-  animation: word-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .animate-hero-fade {
   animation: fade-in 0.5s ease both;
 }
-
-.animate-hero-rule {
-  transform-origin: left;
-  animation: scale-in-x 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* ─── Scroll-triggered animations ───────────────────────── */
-/* Graceful degradation: content is always visible; animation is progressive enhancement */
 
 @supports (animation-timeline: view()) {
   .animate-on-scroll {
@@ -188,11 +148,6 @@ pre.astro-code {
     animation-range: entry 0% entry 25%;
   }
 }
-/* ─── Navbar: floating command island ────────────────────── */
-/* Detached from the top edge, sharp-cornered, mono-labelled. Contracts
-   toward the centre on scroll: the wordmark collapses to its glyph and
-   the island narrows. Every nav item stays reachable at both widths -
-   nothing is hidden on scroll. */
 
 .nav-shell {
   position: fixed;
@@ -203,8 +158,24 @@ pre.astro-code {
   padding-top: calc(0.875rem + env(safe-area-inset-top, 0px));
   padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
   padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
-  /* the gutters either side of the island stay click-through */
+
   pointer-events: none;
+}
+
+.nav-shell::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: -2.5rem;
+  z-index: -1;
+  pointer-events: none;
+  background-color: oklch(0.14 0.012 45 / 0.82);
+  backdrop-filter: blur(10px) saturate(115%);
+  -webkit-backdrop-filter: blur(10px) saturate(115%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 100%);
 }
 
 .nav-island {
@@ -223,7 +194,6 @@ pre.astro-code {
     box-shadow 0.3s ease;
 }
 
-/* Hairline amber top edge, brightest at the centre */
 .nav-island::before {
   content: '';
   position: absolute;
@@ -252,7 +222,61 @@ pre.astro-code {
   padding-right: 0;
 }
 
-/* ─── Wordmark ─── */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.nav-mark {
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-style: normal;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  margin-right: 0.5rem;
+  white-space: nowrap;
+}
+
+.nav-mark-bracket {
+  color: var(--accent-500);
+}
+
+.nav-brand-sep {
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.9375rem;
+  color: var(--neutral-600, var(--border));
+  flex-shrink: 0;
+}
+
+.nav-section {
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  transition: color 0.2s ease;
+}
+
+.nav-section:hover {
+  color: var(--foreground);
+}
+
+@media (max-width: 30rem) {
+  .nav-brand-sep,
+  .nav-section {
+    display: none;
+  }
+}
 
 .nav-wordmark {
   display: inline-flex;
@@ -262,7 +286,8 @@ pre.astro-code {
   padding-inline: 0.5rem;
   font-family: "Fraunces Variable", "Iowan Old Style", serif;
   font-optical-sizing: auto;
-  font-style: italic;
+
+  font-style: normal;
   font-size: 1.0625rem;
   font-weight: 500;
   letter-spacing: 0.01em;
@@ -275,10 +300,6 @@ pre.astro-code {
 .nav-wordmark:hover {
   color: var(--accent-500);
 }
-
-
-
-/* ─── Links ─── */
 
 .nav-links {
   display: none;
@@ -297,7 +318,7 @@ pre.astro-code {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* HIG 44x44pt minimum */
+
   min-height: 44px;
   min-width: 44px;
   padding-inline: 0.625rem;
@@ -315,7 +336,6 @@ pre.astro-code {
   color: var(--foreground);
 }
 
-/* amber tick under the label, drawn from the centre out */
 .nav-link::after {
   content: '';
   position: absolute;
@@ -332,11 +352,6 @@ pre.astro-code {
   width: calc(100% - 1.25rem);
 }
 
-/* ─── CTA ─── */
-
-/* The CTA is a segment OF the island, flush to its right edge, rather
-   than a bordered box floating inside it - two nested hairline frames
-   9px apart read as cramped. A left divider separates it from the links. */
 .nav-cta {
   display: none;
   align-items: center;
@@ -378,8 +393,6 @@ pre.astro-code {
   }
 }
 
-/* In the dropdown there is no nesting problem, so the CTA is a normal
-   filled button. */
 .nav-cta-mobile {
   display: inline-flex;
   align-items: center;
@@ -404,8 +417,6 @@ pre.astro-code {
   border-color: var(--accent-400);
 }
 
-/* ─── Mobile menu (expands the island downward) ─── */
-
 .nav-mobile-menu {
   flex-direction: column;
   border-top: 1px solid var(--border);
@@ -421,9 +432,6 @@ pre.astro-code {
     display: none;
   }
 }
-
-
-/* ─── Mobile hamburger ───────────────────────────────────── */
 
 .hamburger-btn span:nth-child(1) {
   transform-origin: center;
@@ -451,8 +459,6 @@ pre.astro-code {
   transform: rotate(-45deg) translateY(-6px);
 }
 
-/* ─── Card hover effects ─────────────────────────────────── */
-
 .card-hover {
   transition: border-color 0.2s ease;
 }
@@ -460,8 +466,6 @@ pre.astro-code {
 .card-hover:hover {
   border-color: var(--accent-500);
 }
-
-/* ─── Typography utilities ───────────────────────────────── */
 
 .section-label {
   display: inline-flex;
@@ -483,16 +487,6 @@ pre.astro-code {
   background-color: var(--accent-500);
 }
 
-.small-caps {
-  text-transform: uppercase;
-  font-size: 1rem;
-  letter-spacing: 0.08em;
-  font-weight: 500;
-  font-family: "Urbanist Variable", system-ui, sans-serif;
-}
-
-/* ─── Section index numerals ─────────────────────────────── */
-
 .index-numeral {
   font-family: "Fraunces Variable", serif;
   font-optical-sizing: auto;
@@ -502,8 +496,6 @@ pre.astro-code {
   line-height: 1;
   color: var(--neutral-650);
 }
-
-/* ─── Ambient glow (adds depth behind hero/CTA moments) ──── */
 
 .ambient-glow {
   position: relative;
@@ -519,8 +511,6 @@ pre.astro-code {
   background: radial-gradient(ellipse 60% 50% at 30% 20%, oklch(0.55 0.15 65 / 0.16), transparent 70%);
   pointer-events: none;
 }
-
-/* ─── Expertise topic chips ─────────────────────────────── */
 
 .topic-chip {
   display: inline-flex;
@@ -540,20 +530,11 @@ pre.astro-code {
   color: var(--foreground);
 }
 
-/* ─── Hero rule ──────────────────────────────────────────── */
-
-.hero-rule {
-  border: none;
-  border-top: 1px solid var(--border);
-}
-
-/* ─── Social icon button ─────────────────────────────────── */
-
 .social-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* HIG 44x44pt minimum */
+
   width: 2.75rem;
   height: 2.75rem;
   border: 1px solid var(--border);
@@ -565,16 +546,6 @@ pre.astro-code {
   border-color: var(--accent-500);
   color: var(--accent-500);
 }
-
-/* ─── Stat divider ───────────────────────────────────────── */
-
-.stat-divider {
-  width: 1px;
-  height: 40px;
-  background-color: var(--border);
-}
-
-/* ─── CTA Button ─────────────────────────────────────────── */
 
 .btn-primary {
   display: inline-flex;
@@ -620,12 +591,10 @@ pre.astro-code {
   transform: translateY(-1px);
 }
 
-/* ─── Long-form guide prose ──────────────────────────────── */
-
 .prose-content {
   font-size: 1.125rem;
   line-height: 1.8;
-  /* HIG: body copy is the primary label colour; muted is for supporting text only */
+
   color: var(--foreground);
 }
 
@@ -656,7 +625,6 @@ pre.astro-code {
   color: var(--foreground);
 }
 
-/* Figure captions and other supporting text stay secondary */
 .prose-content figcaption {
   color: var(--muted-foreground);
 }
@@ -702,8 +670,6 @@ pre.astro-code {
   margin-top: 1.5rem;
 }
 
-/* ─── FAQ accordion (native details/summary) ────────────── */
-
 .faq-item {
   border-bottom: 1px solid var(--border);
 }
@@ -742,11 +708,6 @@ pre.astro-code {
   line-height: 1.7;
 }
 
-/* ─── Focus indicator (HIG: focus must be obvious) ───────── */
-/* Replaces the UA default 1px amber-at-50% ring, which was far too
-   faint against a near-black background. :focus-visible so pointer
-   clicks don't ring, only keyboard/AT navigation. */
-
 :focus-visible {
   outline: 2px solid var(--accent-500);
   outline-offset: 2px;
@@ -756,12 +717,6 @@ pre.astro-code {
 .card-hover:focus-visible {
   outline-offset: -2px;
 }
-
-/* ─── Reduce Motion (HIG: honour the system setting) ─────── */
-/* Critical: the hero/scroll animations use animation-fill-mode: both
-   with delays, so content sits at opacity 0 until they run. Disabling
-   animation must therefore also force the end state, not just shorten
-   the duration, or the content would never appear. */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -776,8 +731,6 @@ pre.astro-code {
   }
 
   .animate-hero-fade,
-  .animate-word-reveal,
-  .animate-hero-rule,
   .animate-on-scroll {
     animation: none !important;
     opacity: 1 !important;
@@ -790,29 +743,17 @@ pre.astro-code {
   }
 }
 
-/* ─── Safe-area insets (notch / Dynamic Island / home bar) ─ */
-/* Paired with viewport-fit=cover in BaseLayout. Applied to the shared
-   gutter utility so every content column clears the sensor housing in
-   landscape without breaking full-bleed section backgrounds. */
-
 @supports (padding: max(0px, env(safe-area-inset-left))) {
   .px-6 {
     padding-left: max(1.5rem, env(safe-area-inset-left));
     padding-right: max(1.5rem, env(safe-area-inset-right));
   }
 
-
   footer {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
-/* ─── Hit targets (HIG: 44x44pt minimum) ─────────────────── */
-
-/* Expands a link's touch target to 44px tall without changing layout.
-   Only for places where real padding would distort the composition
-   (breadcrumbs), and only where nothing sits within 44px vertically,
-   so expanded targets can't overlap. */
 .tap-target {
   position: relative;
 }
@@ -828,17 +769,12 @@ pre.astro-code {
   transform: translateY(-50%);
 }
 
-/* Links that can take real padding */
 .tap-link {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
   min-width: 44px;
 }
-
-/* ─── Homepage section anchors ───────────────────────────── */
-/* Clears the 64px sticky navbar on anchor navigation, matching the
-   behaviour the guide TOC already had. */
 
 #about,
 #expertise,
@@ -847,15 +783,10 @@ pre.astro-code {
   scroll-margin-top: 6.5rem;
 }
 
-/* ─── Guide comparison tables ────────────────────────────── */
-/* The .table-scroll wrapper is injected by the rehype plugin in
-   astro.config.mjs so a wide table scrolls on a phone instead of
-   forcing the whole page sideways. */
-
 .prose-content .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  /* Room for the scrollbar so the last row's border isn't clipped */
+
   padding-bottom: 2px;
 }
 
@@ -887,7 +818,6 @@ pre.astro-code {
   color: var(--foreground);
 }
 
-/* The leftmost cell is the row's label, so it carries the emphasis. */
 .prose-content tbody td:first-child {
   font-weight: 500;
 }
@@ -904,12 +834,6 @@ pre.astro-code {
 .prose-content table strong {
   font-weight: 600;
 }
-
-
-
-/* ─── Stack layer panel ──────────────────────────────────── */
-/* Reads as a layered architecture rather than the 40-line YAML dump it
-   replaced: an app-to-infra axis on the left, one band per tier. */
 
 .stack-panel {
   display: grid;
@@ -962,13 +886,9 @@ pre.astro-code {
 
 @media (min-width: 640px) {
   .stack-layer {
-    grid-template-columns: 116px 1fr;
+    grid-template-columns: 124px 1fr;
     align-items: baseline;
   }
-}
-
-.stack-layer.is-accent {
-  border-left-color: var(--accent-500);
 }
 
 .stack-layer-label {
@@ -978,10 +898,6 @@ pre.astro-code {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--foreground);
-}
-
-.stack-layer.is-accent .stack-layer-label {
-  color: var(--accent-500);
 }
 
 .stack-layer-items {
@@ -994,17 +910,8 @@ pre.astro-code {
 }
 
 .stack-sep {
-  /* neutral-600 put this at 1.63:1 - decorative, but it was effectively
-     invisible as well as failing AA */
   color: var(--muted-foreground);
 }
-
-/* ─── Diagram scroll containers ──────────────────────────── */
-/* An SVG set to w-full inside an overflow-x-auto wrapper shrinks to fit
-   instead of scrolling, which squashed diagram labels to 5-7px on phones.
-   --diagram-min sets the width below which the diagram scrolls instead of
-   shrinking further; it is chosen per diagram so the smallest label stays
-   at roughly 11px. */
 
 .diagram-scroll {
   overflow-x: auto;
@@ -1014,13 +921,6 @@ pre.astro-code {
 .diagram-scroll svg {
   min-width: var(--diagram-min, 0px);
 }
-
-/* ─── Schematics ─────────────────────────────────────────── */
-/* Section diagrams are built from real HTML rather than SVG so they
-   reflow at any width instead of scrolling or shrinking their labels,
-   and so the labels are selectable, translatable text.
-   Deliberately monochrome: amber is the site's emphasis colour, and
-   using it on a box here implied a highlight that carried no meaning. */
 
 .schematic {
   display: flex;
@@ -1044,24 +944,6 @@ pre.astro-code {
   text-transform: uppercase;
   color: var(--muted-foreground);
   margin: 0;
-}
-
-.schematic-label.is-centered {
-  text-align: center;
-}
-
-.schematic-body {
-  display: flex;
-  align-items: stretch;
-  gap: 0.75rem;
-}
-
-.schematic-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
-  min-width: 0;
 }
 
 .schematic-box {
@@ -1111,7 +993,6 @@ pre.astro-code {
   border-top: 0;
 }
 
-/* Vertical connector between a caption and the frame it feeds */
 .schematic-tick {
   width: 1px;
   height: 20px;
@@ -1119,7 +1000,6 @@ pre.astro-code {
   background-color: var(--border);
 }
 
-/* Flow arrow that turns downward once the row stacks */
 .flow-arrow {
   display: flex;
   align-items: center;
@@ -1135,16 +1015,10 @@ pre.astro-code {
 }
 
 @media (max-width: 639px) {
-  .schematic-body {
-    flex-direction: column;
-  }
-
   .flow-arrow {
     transform: rotate(90deg);
   }
 }
-
-/* ─── Responsible AI loop ────────────────────────────────── */
 
 .loop-stages {
   display: flex;
@@ -1176,13 +1050,229 @@ pre.astro-code {
   }
 }
 
-/* Wide variant: title and note sit at opposite edges so a full-width band
-   reads as deliberate rather than as a short label in a stretched box. */
-.schematic-box.is-wide {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.25rem 1.5rem;
-  min-height: 56px;
+.prose-content .key-idea,
+.prose-content .viz {
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  margin-top: 1.75rem;
+}
+
+.prose-content .key-idea {
+  border-left: 3px solid var(--accent-500);
+  padding: 1.15rem 1.35rem;
+}
+
+.prose-content .key-idea-label {
+  display: block;
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-500);
+  margin-bottom: 0.5rem;
+}
+
+.prose-content .key-idea p {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+.prose-content .viz {
+  padding: 1.5rem 1.35rem 1.25rem;
+}
+
+.prose-content .viz-title {
+  display: block;
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  margin-bottom: 1.1rem;
+}
+
+.prose-content .viz-caption {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  margin-top: 1.1rem;
+}
+
+.prose-content ol.viz-flow,
+.prose-content ol.viz-ladder,
+.prose-content dl.viz-bars {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.prose-content .viz-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.prose-content .viz-step {
+  position: relative;
+  border: 1px solid var(--border);
+  background-color: var(--background);
+  padding: 0.8rem 0.9rem;
+}
+
+.prose-content .viz-step + .viz-step::before {
+  content: '↓';
+  position: absolute;
+  top: -1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.875rem;
+  line-height: 1;
+  color: var(--accent-500);
+}
+
+.prose-content .viz-step-name {
+  display: block;
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--foreground);
+}
+
+.prose-content .viz-step-note {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  margin-top: 0.3rem;
+}
+
+@media (min-width: 640px) {
+  .prose-content .viz-flow {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1.9rem;
+  }
+
+  .prose-content .viz-step {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .prose-content .viz-step + .viz-step::before {
+    content: '→';
+    top: 50%;
+    left: -1.35rem;
+    transform: translateY(-50%);
+  }
+}
+
+.prose-content .viz-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.prose-content .viz-bar {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 0.75rem;
+  align-items: center;
+  padding-bottom: 0.8rem;
+}
+
+.prose-content .viz-bar-label {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.prose-content .viz-bar-value {
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent-500);
+  text-align: right;
+  margin: 0;
+}
+
+.prose-content .viz-bar-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: block;
+  height: 0.5rem;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+}
+
+.prose-content .viz-bar-fill {
+  display: block;
+  height: 100%;
+  width: var(--w, 100%);
+  background-color: var(--accent-500);
+}
+
+.prose-content .viz-bar.is-muted .viz-bar-fill {
+  background-color: var(--neutral-650, oklch(0.45 0.01 66));
+}
+
+.prose-content .viz-bar.is-muted .viz-bar-value {
+  color: var(--muted-foreground);
+}
+
+.prose-content .viz-ladder {
+  display: flex;
+  flex-direction: column;
+  counter-reset: rung;
+}
+
+.prose-content .viz-rung {
+  display: grid;
+  grid-template-columns: 2.25rem 1fr;
+  gap: 0.75rem;
+  border-top: 1px solid var(--border);
+  padding: 0.85rem 0;
+}
+
+.prose-content .viz-rung:last-child {
+  border-bottom: 1px solid var(--border);
+}
+
+.prose-content .viz-rung::before {
+  grid-column: 1;
+  grid-row: 1;
+  counter-increment: rung;
+  content: counter(rung, decimal-leading-zero);
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-500);
+  padding-top: 0.15rem;
+}
+
+.prose-content .viz-rung-name {
+  display: block;
+  grid-column: 2;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--foreground);
+}
+
+.prose-content .viz-rung-note {
+  display: block;
+  grid-column: 2;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  margin-top: 0.15rem;
 }
