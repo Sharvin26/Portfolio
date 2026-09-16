@@ -1,65 +1,32 @@
 ---
-const surface = "oklch(0.205 0.007 62)";
-const stroke = "oklch(0.37 0.009 66)";
-const text = "oklch(0.97 0.004 90)";
-const muted = "oklch(0.66 0.014 55)";
-const accent = "oklch(0.77 0.16 71)";
+const core = [
+  { label: "Agents & Orchestration", note: "plan, call tools, act" },
+  { label: "Retrieval & Knowledge", note: "ground it in your data" },
+];
 ---
 
-<figure class="expertise-map m-0">
-  <div class="diagram-scroll" style="--diagram-min: 620px">
-    <svg
-    viewBox="0 0 560 264"
-    role="img"
-    aria-labelledby="expertise-map-title expertise-map-desc"
-    class="w-full h-auto"
-  >
-    <title id="expertise-map-title">How the five expertise clusters fit together</title>
-    <desc id="expertise-map-desc">
-      Retrieval and knowledge sit at the base, with agents and orchestration built on top of it.
-      Voice is an interface onto that core. Evaluation and safety wrap the whole system from
-      above, and infrastructure and performance carry it from below.
-    </desc>
+<figure class="schematic m-0">
+  <div class="schematic-frame">
+    <p class="schematic-label is-centered">Evaluation &amp; Safety</p>
 
-    <defs>
-      <marker id="expertise-arrow" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
-        <path d="M0,0 L7,3.5 L0,7 Z" fill={accent} />
-      </marker>
-    </defs>
+    <div class="schematic-body">
+      <div class="schematic-box" style="flex: 0 0 auto">
+        <span class="schematic-title">Voice</span>
+        <span class="schematic-note">interface</span>
+      </div>
 
-    <!-- Wrapping concerns -->
-    <rect x="10" y="26" width="540" height="206" fill="none" stroke={stroke} stroke-width="1" />
-    <text x="280" y="49" text-anchor="middle" font-size="11" font-family="monospace" letter-spacing="1.8" fill={accent}>
-      EVALUATION &amp; SAFETY
-    </text>
-    <text x="280" y="216" text-anchor="middle" font-size="11" font-family="monospace" letter-spacing="1.8" fill={accent}>
-      INFRA &amp; PERFORMANCE
-    </text>
+      <span class="flow-arrow" aria-hidden="true"></span>
 
-    <!-- Voice interface -->
-    <rect x="34" y="104" width="112" height="52" fill={surface} stroke={stroke} stroke-width="1" />
-    <text x="90" y="128" text-anchor="middle" font-size="12" font-family="monospace" letter-spacing="1" fill={text}>VOICE</text>
-    <text x="90" y="143" text-anchor="middle" font-size="9.5" font-family="monospace" fill={muted}>interface</text>
-    <line x1="146" y1="130" x2="192" y2="130" stroke={accent} stroke-width="1.5" marker-end="url(#expertise-arrow)" />
+      <div class="schematic-stack">
+        {core.map((item) => (
+          <div class="schematic-box">
+            <span class="schematic-title">{item.label}</span>
+            <span class="schematic-note">{item.note}</span>
+          </div>
+        ))}
+      </div>
+    </div>
 
-    <!-- Core stack -->
-    <rect x="200" y="78" width="316" height="52" fill={surface} stroke={stroke} stroke-width="1" />
-    <text x="216" y="101" font-size="12" font-family="monospace" letter-spacing="1" fill={text}>AGENTS &amp; ORCHESTRATION</text>
-    <text x="216" y="118" font-size="9.5" font-family="monospace" fill={muted}>plan, call tools, act</text>
-
-    <rect x="200" y="130" width="316" height="52" fill={surface} stroke={accent} stroke-width="1.5" />
-    <text x="216" y="153" font-size="12" font-family="monospace" letter-spacing="1" fill={text}>RETRIEVAL &amp; KNOWLEDGE</text>
-    <text x="216" y="170" font-size="9.5" font-family="monospace" fill={muted}>ground it in your data</text>
-  </svg>
+    <p class="schematic-label is-centered">Infra &amp; Performance</p>
   </div>
 </figure>
-
-<style>
-  /* The 9.5px descriptors fall below a legible size once the map scales
-     down on narrow screens, so they are dropped rather than shrunk. */
-  @media (max-width: 767px) {
-    .expertise-map svg text[font-size="9.5"] {
-      display: none;
-    }
-  }
-</style>
