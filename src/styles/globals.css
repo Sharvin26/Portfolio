@@ -188,21 +188,143 @@ pre.astro-code {
     animation-range: entry 0% entry 25%;
   }
 }
+/* ─── Navbar: floating command island ────────────────────── */
+/* Detached from the top edge, sharp-cornered, mono-labelled. Contracts
+   toward the centre on scroll: the wordmark collapses to its glyph and
+   the island narrows. Every nav item stays reachable at both widths -
+   nothing is hidden on scroll. */
 
-/* ─── Navbar ─────────────────────────────────────────────── */
+.nav-shell {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding-top: calc(0.875rem + env(safe-area-inset-top, 0px));
+  padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+  /* the gutters either side of the island stay click-through */
+  pointer-events: none;
+}
+
+.nav-island {
+  pointer-events: auto;
+  position: relative;
+  margin: 0 auto;
+  max-width: 1152px;
+  background-color: oklch(0.17 0.009 48 / 0.72);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px oklch(0 0 0 / 0.38);
+  transition:
+    max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Hairline amber top edge, brightest at the centre */
+.nav-island::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-500), transparent);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.nav-island.is-contracted {
+  max-width: 720px;
+  background-color: oklch(0.16 0.009 48 / 0.86);
+  box-shadow: 0 12px 34px oklch(0 0 0 / 0.46);
+}
+
+.nav-island-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 56px;
+  padding-inline: 0.625rem;
+}
+
+/* ─── Wordmark ─── */
+
+.nav-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding-inline: 0.5rem;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.nav-glyph {
+  color: var(--accent-500);
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.8125rem;
+  line-height: 1;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-wordmark:hover .nav-glyph {
+  transform: translateX(2px);
+}
+
+.nav-wordmark-text {
+  font-family: "Fraunces Variable", "Iowan Old Style", serif;
+  font-optical-sizing: auto;
+  font-style: italic;
+  font-size: 1.0625rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 12rem;
+  opacity: 1;
+  transition:
+    max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease;
+}
+
+.nav-island.is-contracted .nav-wordmark-text {
+  max-width: 0;
+  opacity: 0;
+}
+
+/* ─── Links ─── */
+
+.nav-links {
+  display: none;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+@media (min-width: 768px) {
+  .nav-links {
+    display: flex;
+  }
+}
 
 .nav-link {
   position: relative;
-  /* HIG 44x44pt minimum. Padding grows the target without changing the
-     type size; the nav gap is reduced to compensate so the bar looks the same. */
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  /* HIG 44x44pt minimum */
   min-height: 44px;
-  padding-inline: 0.5rem;
-  font-size: 1rem;
-  letter-spacing: 0.01em;
-  font-weight: 500;
-  font-family: "Urbanist Variable", system-ui, sans-serif;
+  min-width: 44px;
+  padding-inline: 0.625rem;
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--muted-foreground);
   text-decoration: none;
   transition: color 0.2s ease;
@@ -212,49 +334,66 @@ pre.astro-code {
   color: var(--foreground);
 }
 
+/* amber tick under the label, drawn from the centre out */
 .nav-link::after {
   content: '';
   position: absolute;
-  bottom: 0.6rem;
-  left: 0.5rem;
+  bottom: 0.75rem;
+  left: 50%;
   width: 0;
   height: 1.5px;
-  background-color: var(--accent);
-  transition: width 0.3s ease;
+  background-color: var(--accent-500);
+  transform: translateX(-50%);
+  transition: width 0.25s ease;
 }
 
 .nav-link:hover::after {
-  width: calc(100% - 1rem);
+  width: calc(100% - 1.25rem);
 }
 
-.nav-scrolled {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  background-color: oklch(0.15 0.006 60 / 0.92);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.24);
-}
+/* ─── CTA ─── */
 
 .nav-cta {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   min-height: 44px;
-  padding: 0.5rem 1.25rem;
+  padding: 0.5rem 1.125rem;
   background-color: var(--accent-500);
   color: var(--neutral-900);
-  font-family: "Urbanist Variable", system-ui, sans-serif;
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   text-decoration: none;
-  border: 1.5px solid var(--accent-500);
-  transition: background-color 0.2s ease;
+  border: 1px solid var(--accent-500);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .nav-cta:hover {
   background-color: var(--accent-400);
   border-color: var(--accent-400);
 }
+
+/* ─── Mobile menu (expands the island downward) ─── */
+
+.nav-mobile-menu {
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 0.875rem 1rem;
+}
+
+.nav-mobile-menu.is-open {
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .nav-mobile-menu {
+    display: none;
+  }
+}
+
 
 /* ─── Mobile hamburger ───────────────────────────────────── */
 
@@ -493,7 +632,7 @@ pre.astro-code {
   font-weight: 600;
   line-height: 1.2;
   color: var(--foreground);
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 6.5rem;
   margin-top: 3rem;
 }
 
@@ -501,7 +640,7 @@ pre.astro-code {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--foreground);
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 6.5rem;
   margin-top: 2rem;
 }
 
@@ -655,9 +794,6 @@ pre.astro-code {
     padding-right: max(1.5rem, env(safe-area-inset-right));
   }
 
-  header[data-navbar] {
-    padding-top: env(safe-area-inset-top);
-  }
 
   footer {
     padding-bottom: env(safe-area-inset-bottom);
@@ -702,7 +838,7 @@ pre.astro-code {
 #responsible-ai,
 #experience,
 #stack {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 6.5rem;
 }
 
 /* ─── Guide reading measure ──────────────────────────────── */
@@ -718,4 +854,19 @@ pre.astro-code {
 .prose-content > h2,
 .prose-content > h3 {
   max-width: 35rem;
+}
+
+/* Contracted: cluster glyph, links and CTA toward the centre instead of
+   leaving the collapsed wordmark stranded against the left edge. */
+.nav-island.is-contracted .nav-island-inner {
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.nav-island.is-contracted .nav-wordmark {
+  padding-inline: 0.375rem 0.5rem;
+}
+
+.nav-island.is-contracted .nav-cta {
+  margin-left: 0.5rem;
 }

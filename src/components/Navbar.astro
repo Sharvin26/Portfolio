@@ -12,98 +12,100 @@ const navLinks = [
 ];
 ---
 
-<header class="sticky top-0 z-50 w-full transition-all duration-300 bg-background border-b border-border" data-navbar>
-  <div class="max-w-[1200px] mx-auto px-6 flex h-16 items-center justify-between">
-    <a
-      href="/"
-      class="font-display italic shrink-0 inline-flex items-center min-h-[44px] text-xl font-medium tracking-wide text-foreground hover:text-primary transition-colors"
-    >
-      Sharvin Shah
-    </a>
+<header class="nav-shell" data-navbar>
+  <div class="nav-island" data-island>
+    <div class="nav-island-inner">
+      <a href="/" class="nav-wordmark" aria-label="Sharvin Shah — home">
+        <span class="nav-glyph" aria-hidden="true">&#9656;</span>
+        <span class="nav-wordmark-text">Sharvin Shah</span>
+      </a>
 
-    <nav class="hidden md:flex items-center gap-5">
+      <nav class="nav-links" aria-label="Primary">
+        {navLinks.map(({ label, href, external }) => (
+          <a
+            href={href}
+            target={external ? "_blank" : undefined}
+            rel={external ? "noopener" : undefined}
+            class="nav-link"
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+
+      <div class="hidden md:flex shrink-0">
+        <a href="https://www.mtechzilla.com/contact" target="_blank" rel="noopener noreferrer" class="nav-cta">
+          Talk to Me About AI
+        </a>
+      </div>
+
+      <button
+        class="hamburger-btn md:hidden flex flex-col items-center justify-center gap-[5px] min-w-[44px] min-h-[44px]"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        data-menu-toggle
+      >
+        <span class="block h-px w-5 bg-foreground"></span>
+        <span class="block h-px w-5 bg-foreground"></span>
+        <span class="block h-px w-5 bg-foreground"></span>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="nav-mobile-menu hidden" data-mobile-menu>
       {navLinks.map(({ label, href, external }) => (
         <a
           href={href}
           target={external ? "_blank" : undefined}
           rel={external ? "noopener" : undefined}
-          class="nav-link"
+          class="tap-link text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
+          data-mobile-link
         >
           {label}
         </a>
       ))}
-    </nav>
-
-    <div class="hidden md:flex shrink-0">
-      <a href="https://www.mtechzilla.com/contact" target="_blank" rel="noopener noreferrer" class="nav-cta">
+      <a
+        href="https://www.mtechzilla.com/contact"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="nav-cta self-start mt-2 mb-1"
+        data-mobile-link
+      >
         Talk to Me About AI
       </a>
     </div>
-
-    <button
-      class="hamburger-btn md:hidden flex flex-col items-center justify-center gap-[5px] min-w-[44px] min-h-[44px] -mr-2.5"
-      aria-label="Toggle menu"
-      aria-expanded="false"
-      aria-controls="mobile-menu"
-      data-menu-toggle
-    >
-      <span class="block h-px w-5 bg-foreground"></span>
-      <span class="block h-px w-5 bg-foreground"></span>
-      <span class="block h-px w-5 bg-foreground"></span>
-    </button>
-  </div>
-
-  <div
-    id="mobile-menu"
-    class="hidden md:hidden bg-background border-t border-border px-6 py-3 flex-col"
-    data-mobile-menu
-  >
-    {navLinks.map(({ label, href, external }) => (
-      <a
-        href={href}
-        target={external ? "_blank" : undefined}
-        rel={external ? "noopener" : undefined}
-        class="tap-link text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
-        data-mobile-link
-      >
-        {label}
-      </a>
-    ))}
-    <a
-      href="https://www.mtechzilla.com/contact"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="nav-cta self-start mt-3 mb-2"
-      data-mobile-link
-    >
-      Talk to Me About AI
-    </a>
   </div>
 </header>
 
 <script>
-  const header = document.querySelector<HTMLElement>("[data-navbar]");
+  const island = document.querySelector<HTMLElement>("[data-island]");
   const toggleBtn = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
   const mobileMenu = document.querySelector<HTMLElement>("[data-mobile-menu]");
 
+  // Contract the island once the page has scrolled past the hero's top edge.
+  // rAF-throttled so the scroll handler stays off the critical path.
+  let ticking = false;
+  const syncContracted = () => {
+    island?.classList.toggle("is-contracted", window.scrollY > 24);
+    ticking = false;
+  };
   window.addEventListener(
     "scroll",
     () => {
-      const scrolled = window.scrollY > 10;
-      header?.classList.toggle("nav-scrolled", scrolled);
-      header?.classList.toggle("bg-background", !scrolled);
-      header?.classList.toggle("border-b", !scrolled);
-      header?.classList.toggle("border-border", !scrolled);
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(syncContracted);
     },
     { passive: true }
   );
+  syncContracted();
 
-  const isMenuOpen = () => mobileMenu?.classList.contains("flex") === true;
+  const isMenuOpen = () => mobileMenu?.classList.contains("is-open") === true;
 
   const closeMenu = ({ refocus = false } = {}) => {
     if (!isMenuOpen()) return;
     mobileMenu?.classList.add("hidden");
-    mobileMenu?.classList.remove("flex");
+    mobileMenu?.classList.remove("is-open");
     toggleBtn?.classList.remove("is-open");
     toggleBtn?.setAttribute("aria-expanded", "false");
     if (refocus) toggleBtn?.focus();
@@ -111,7 +113,7 @@ const navLinks = [
 
   toggleBtn?.addEventListener("click", () => {
     const isOpen = mobileMenu?.classList.toggle("hidden") === false;
-    mobileMenu?.classList.toggle("flex", isOpen);
+    mobileMenu?.classList.toggle("is-open", isOpen);
     toggleBtn.classList.toggle("is-open", isOpen);
     toggleBtn.setAttribute("aria-expanded", String(isOpen));
     // Move focus into the menu so keyboard and VoiceOver users land there
@@ -127,11 +129,11 @@ const navLinks = [
     if (event.key === "Escape") closeMenu({ refocus: true });
   });
 
-  // Tapping outside the menu dismisses it
+  // Tapping outside the island dismisses it
   document.addEventListener("click", (event) => {
     if (!isMenuOpen()) return;
     const target = event.target as Node;
-    if (mobileMenu?.contains(target) || toggleBtn?.contains(target)) return;
+    if (island?.contains(target)) return;
     closeMenu();
   });
 
