@@ -1,0 +1,89 @@
+---
+const surface = "oklch(0.205 0.007 62)";
+const stroke = "oklch(0.37 0.009 66)";
+const text = "oklch(0.97 0.004 90)";
+const muted = "oklch(0.66 0.014 55)";
+const accent = "oklch(0.77 0.16 71)";
+
+const stages = [
+  { label: "GUARDRAILS", note: "constrain" },
+  { label: "EVALS", note: "measure" },
+  { label: "OVERSIGHT", note: "approve" },
+  { label: "RED TEAM", note: "attack" },
+];
+
+const boxW = 118;
+const gap = 20;
+const startX = 14;
+---
+
+<figure class="rai-loop m-0">
+  <div class="diagram-scroll" style="--diagram-min: 600px">
+    <svg
+    viewBox="0 0 560 176"
+    role="img"
+    aria-labelledby="rai-loop-title rai-loop-desc"
+    class="w-full h-auto"
+  >
+    <title id="rai-loop-title">The responsible AI loop I run</title>
+    <desc id="rai-loop-desc">
+      A continuous cycle: guardrails constrain what the system can output, evals measure whether
+      it still behaves, human oversight approves the high-cost decisions, and red teaming attacks
+      it before anyone else does - then the loop repeats.
+    </desc>
+
+    <defs>
+      <marker id="rai-arrow" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+        <path d="M0,0 L7,3.5 L0,7 Z" fill={accent} />
+      </marker>
+    </defs>
+
+    {stages.map((stage, i) => {
+      const x = startX + i * (boxW + gap);
+      return (
+        <>
+          <rect x={x} y="28" width={boxW} height="54" fill={surface} stroke={i === 0 ? accent : stroke} stroke-width={i === 0 ? 1.5 : 1} />
+          <text x={x + boxW / 2} y="52" text-anchor="middle" font-size="11.5" font-family="monospace" letter-spacing="0.6" fill={text}>
+            {stage.label}
+          </text>
+          <text x={x + boxW / 2} y="68" text-anchor="middle" font-size="9.5" font-family="monospace" fill={muted} class="rai-note">
+            {stage.note}
+          </text>
+          {i < stages.length - 1 && (
+            <line
+              x1={x + boxW}
+              y1="55"
+              x2={x + boxW + gap - 4}
+              y2="55"
+              stroke={accent}
+              stroke-width="1.5"
+              marker-end="url(#rai-arrow)"
+            />
+          )}
+        </>
+      );
+    })}
+
+    <!-- return path: the loop never stops -->
+    <path
+      d="M 487 82 L 487 122 L 73 122 L 73 86"
+      fill="none"
+      stroke={stroke}
+      stroke-width="1"
+      stroke-dasharray="3 3"
+      marker-end="url(#rai-arrow)"
+    />
+    <text x="280" y="146" text-anchor="middle" font-size="10" font-family="monospace" letter-spacing="1.4" fill={muted}>
+      EVERY RELEASE, NOT ONCE AT LAUNCH
+    </text>
+  </svg>
+  </div>
+</figure>
+
+<style>
+  @media (max-width: 767px) {
+    .rai-loop .rai-note {
+      display: none;
+    }
+  }
+</style>

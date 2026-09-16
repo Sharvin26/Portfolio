@@ -1,65 +1,88 @@
 ---
-import ExpertiseCard from "./ExpertiseCard.astro";
+import ExpertiseMap from "./diagrams/ExpertiseMap.astro";
 
+// The five topics with a dedicated guide get a card and a short line.
+const guides = [
+  {
+    label: "RAG",
+    href: "/guides/rag",
+    description: "Grounding model outputs in your own data instead of hoping the weights remember it.",
+  },
+  {
+    label: "AI Agents",
+    href: "/guides/ai-agents",
+    description: "Systems that plan, call tools, and act - with real error handling, not a happy-path demo.",
+  },
+  {
+    label: "MCP",
+    href: "/guides/mcp",
+    description: "The emerging standard for wiring tools and data sources into any model client.",
+  },
+  {
+    label: "LLM Evaluation",
+    href: "/guides/llm-evaluation",
+    description: "Measuring whether a change made the system better, not just different.",
+  },
+  {
+    label: "Voice AI Agents",
+    href: "/guides/voice-ai-agents",
+    description: "Agents that hold a real-time conversation, not a chatbot read aloud.",
+  },
+];
+
+// Everything else, as scannable chips rather than 28 more rows of prose.
 const clusters = [
   {
     label: "Retrieval & Knowledge",
     items: [
-      { label: "RAG", description: "Grounding model outputs in your own data instead of hoping the weights remember it.", href: "/guides/rag" },
-      { label: "Embeddings / Vector DBs", description: "Turning text into vectors you can actually search, cluster, and rank." },
-      { label: "Vector Stores", description: "Picking (and operating) the right store for your retrieval scale - pgvector to dedicated engines." },
-      { label: "Hybrid Search & Reranking", description: "Combining keyword and semantic search, then reranking so the right chunk actually wins." },
-      { label: "Chunking Strategies", description: "The unglamorous decision that determines whether your RAG pipeline works at all." },
-      { label: "Context Engineering", description: "Deciding what actually goes in the prompt - not just writing a better one." },
-      { label: "Context Window", description: "Budgeting tokens like memory: what to keep, summarize, or drop." },
+      "Embeddings / Vector DBs",
+      "Vector Stores",
+      "Hybrid Search & Reranking",
+      "Chunking Strategies",
+      "Context Engineering",
+      "Context Window",
     ],
   },
   {
     label: "Agents & Orchestration",
     items: [
-      { label: "AI Agents", description: "Systems that plan, call tools, and act - with real error handling, not a happy-path demo.", href: "/guides/ai-agents" },
-      { label: "Multi-Agent Systems", description: "Coordinating multiple specialized agents without them stepping on each other." },
-      { label: "MCP", description: "The emerging standard for wiring tools and data sources into any model client.", href: "/guides/mcp" },
-      { label: "Tool Calling", description: "Giving a model a typed, constrained way to take real actions." },
-      { label: "Function Calling", description: "Structured, schema-validated requests a model can trigger reliably." },
-      { label: "AI Orchestration", description: "The layer that routes, retries, and sequences calls across models and tools." },
-      { label: "Agent Memory", description: "Short and long-term state so an agent doesn't relearn your business every session." },
-      { label: "Human-in-the-Loop", description: "Deciding exactly where a person should approve, override, or veto the model." },
-      { label: "LLM Gateways / Routing", description: "One interface in front of many providers - for cost, fallback, and control." },
+      "Multi-Agent Systems",
+      "Tool Calling",
+      "Function Calling",
+      "AI Orchestration",
+      "Agent Memory",
+      "Human-in-the-Loop",
+      "LLM Gateways / Routing",
     ],
   },
   {
     label: "Evaluation & Safety",
     items: [
-      { label: "LLM Evaluation", description: "Measuring whether a change made the system better, not just different.", href: "/guides/llm-evaluation" },
-      { label: "Guardrails", description: "Constraints that keep outputs inside what the business can actually stand behind." },
-      { label: "Prompt Injection", description: "The attack surface every tool-calling agent needs to be designed against." },
-      { label: "AI Hallucination", description: "Where it comes from, and the concrete techniques that reduce it in production." },
-      { label: "Red Teaming", description: "Adversarially testing a system before your users - or the internet - do it for you." },
-      { label: "Structured Output", description: "Getting a model to reliably return JSON your code can trust without regex duct tape." },
-      { label: "LLM Observability", description: "Seeing what a chain or agent actually did, not just what it returned." },
-      { label: "AI Governance", description: "Turning \"responsible AI\" from a policy slide into auditable, enforced controls." },
+      "Guardrails",
+      "Prompt Injection",
+      "AI Hallucination",
+      "Red Teaming",
+      "Structured Output",
+      "LLM Observability",
+      "AI Governance",
     ],
   },
   {
     label: "Infra & Performance",
     items: [
-      { label: "Fine-tuning", description: "When it beats prompting and RAG - and when it's a waste of a training run." },
-      { label: "Prompt Caching", description: "Cutting cost and latency by not re-processing the same context every call." },
-      { label: "Cost Optimization", description: "Token budgets, model tiering, and caching - treated as a real line item." },
-      { label: "Latency Engineering", description: "Streaming, batching, and model choice decisions that make an agent feel instant." },
-      { label: "Quantization", description: "Running bigger models on smaller hardware without wrecking quality." },
-      { label: "Open-Weight Models", description: "When self-hosting beats an API call - for cost, latency, or data control." },
-      { label: "Small Language Models", description: "Right-sizing the model to the task instead of defaulting to the biggest one." },
-      { label: "Streaming Inference", description: "Token-by-token delivery for interfaces that can't afford to wait." },
+      "Fine-tuning",
+      "Prompt Caching",
+      "Cost Optimization",
+      "Latency Engineering",
+      "Quantization",
+      "Open-Weight Models",
+      "Small Language Models",
+      "Streaming Inference",
     ],
   },
   {
     label: "Voice",
-    items: [
-      { label: "Voice AI Engineering", description: "The full pipeline - ASR, turn-taking, TTS - most \"voice AI\" demos skip." },
-      { label: "Voice AI Agents", description: "Agents that hold a real-time conversation, not a chatbot read aloud.", href: "/guides/voice-ai-agents" },
-    ],
+    items: ["Voice AI Engineering"],
   },
 ];
 ---
@@ -67,30 +90,62 @@ const clusters = [
 <section id="expertise" class="py-20 md:py-28 border-b border-border">
   <div class="max-w-[1200px] mx-auto px-6">
     <div class="animate-on-scroll">
-      <div class="flex flex-row-reverse md:flex-row items-start justify-between gap-6 mb-12">
-        <span class="index-numeral hidden md:block" aria-hidden="true">02</span>
-        <div>
-          <div class="section-label mb-3">Expertise</div>
-          <h2 class="font-display text-3xl md:text-4xl font-semibold max-w-lg">Where I Go Deep</h2>
-          <p class="text-sm max-w-md leading-relaxed text-muted-foreground mt-3">
-            The AI/LLM engineering surface I work in daily - five guides below go deeper.
+      <div class="grid lg:grid-cols-[1fr_minmax(0,560px)] gap-12 lg:gap-16 items-center mb-16">
+        <div class="flex flex-col gap-6">
+          <div class="flex items-center gap-5 -ml-1">
+            <span class="index-numeral" aria-hidden="true">02</span>
+            <div class="section-label">Expertise</div>
+          </div>
+          <h2 class="font-display text-3xl md:text-[2.75rem] font-medium leading-[1.1]">
+            Where I <em class="text-primary italic">go deep.</em>
+          </h2>
+          <p class="text-base text-muted-foreground leading-relaxed max-w-[33rem]">
+            Retrieval sits at the base, agents build on it, voice is one interface onto it - and
+            evaluation and infrastructure wrap the whole thing. Five of these go deep enough to
+            deserve their own guide.
           </p>
+        </div>
+
+        <div class="lg:pl-4">
+          <ExpertiseMap />
         </div>
       </div>
 
-      <div class="flex flex-col gap-12">
-        {clusters.map((cluster) => (
-          <div>
-            <h3 class="font-mono text-xs font-semibold tracking-widest uppercase mb-1 text-primary">
-              {cluster.label}
-            </h3>
-            <div class="flex flex-col">
-              {cluster.items.map((item) => (
-                <ExpertiseCard {...item} />
-              ))}
+      <div class="mb-16">
+        <h3 class="font-mono text-xs font-semibold tracking-widest uppercase mb-5 text-primary">
+          Five deep dives
+        </h3>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {guides.map((guide) => (
+            <a href={guide.href} class="card-hover flex flex-col gap-2 p-5 border border-border bg-card">
+              <span class="font-mono text-sm font-semibold uppercase tracking-wide text-foreground">
+                {guide.label}
+              </span>
+              <p class="text-sm text-muted-foreground leading-relaxed flex-1">{guide.description}</p>
+              <span class="font-mono text-xs font-semibold text-primary mt-auto pt-1">Read the guide →</span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-mono text-xs font-semibold tracking-widest uppercase mb-6 text-primary">
+          Everything else I work in
+        </h3>
+        <div class="flex flex-col gap-6">
+          {clusters.map((cluster) => (
+            <div class="grid sm:grid-cols-[200px_1fr] gap-2 sm:gap-6 border-t border-border pt-4">
+              <span class="font-mono text-xs tracking-widest uppercase text-muted-foreground pt-1">
+                {cluster.label}
+              </span>
+              <ul class="flex flex-wrap gap-x-2 gap-y-2 list-none p-0 m-0">
+                {cluster.items.map((item) => (
+                  <li class="topic-chip">{item}</li>
+                ))}
+              </ul>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   </div>

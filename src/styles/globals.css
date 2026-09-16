@@ -505,40 +505,32 @@ pre.astro-code {
   pointer-events: none;
 }
 
-/* ─── Expertise index rows (replaces card-grid pattern) ──── */
+/* ─── Expertise topic chips ─────────────────────────────── */
 
-.expertise-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.375rem 1.5rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border);
-  transition: padding-left 0.2s ease;
+.topic-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3125rem 0.625rem;
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
 
-@media (min-width: 640px) {
-  .expertise-row {
-    grid-template-columns: 220px 1fr auto;
-    align-items: baseline;
-  }
-}
-
-.expertise-row:hover {
-  padding-left: 0.5rem;
-  border-bottom-color: var(--accent-500);
+.topic-chip:hover {
+  border-color: var(--accent-500);
+  color: var(--foreground);
 }
 
 /* ─── Experience rail (timeline) ─────────────────────────── */
 
-.experience-rail {
-  padding-left: 1.5rem;
-  border-left: 1px solid var(--border);
-}
-
 .experience-dot {
   position: absolute;
-  left: -1.5rem;
-  top: 0.35rem;
+  left: 0;
+  top: 0.4rem;
   transform: translateX(-50%);
   width: 8px;
   height: 8px;
@@ -758,7 +750,7 @@ pre.astro-code {
   outline-offset: 2px;
 }
 
-.expertise-row:focus-visible,
+.topic-chip:focus-visible,
 .card-hover:focus-visible {
   outline-offset: -2px;
 }
@@ -882,4 +874,112 @@ pre.astro-code {
 
 .nav-island.is-contracted .nav-cta {
   margin-left: 0.5rem;
+}
+
+/* ─── Stack layer panel ──────────────────────────────────── */
+/* Reads as a layered architecture rather than the 40-line YAML dump it
+   replaced: an app-to-infra axis on the left, one band per tier. */
+
+.stack-panel {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.stack-axis {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 0.25rem;
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  color: var(--muted-foreground);
+}
+
+.stack-axis > span:not(.stack-axis-line) {
+  writing-mode: vertical-rl;
+}
+
+.stack-axis-line {
+  flex: 1;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--accent-500), var(--border));
+}
+
+.stack-layers {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background-color: var(--border);
+  border: 1px solid var(--border);
+}
+
+.stack-layer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.25rem 1.25rem;
+  padding: 0.875rem 1rem;
+  background-color: var(--card);
+  border-left: 2px solid transparent;
+}
+
+@media (min-width: 640px) {
+  .stack-layer {
+    grid-template-columns: 116px 1fr;
+    align-items: baseline;
+  }
+}
+
+.stack-layer.is-accent {
+  border-left-color: var(--accent-500);
+}
+
+.stack-layer-label {
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--foreground);
+}
+
+.stack-layer.is-accent .stack-layer-label {
+  color: var(--accent-500);
+}
+
+.stack-layer-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.stack-sep {
+  /* neutral-600 put this at 1.63:1 - decorative, but it was effectively
+     invisible as well as failing AA */
+  color: var(--muted-foreground);
+}
+
+/* ─── Diagram scroll containers ──────────────────────────── */
+/* An SVG set to w-full inside an overflow-x-auto wrapper shrinks to fit
+   instead of scrolling, which squashed diagram labels to 5-7px on phones.
+   --diagram-min sets the width below which the diagram scrolls instead of
+   shrinking further; it is chosen per diagram so the smallest label stays
+   at roughly 11px. */
+
+.diagram-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.diagram-scroll svg {
+  min-width: var(--diagram-min, 0px);
 }

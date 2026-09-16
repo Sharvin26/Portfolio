@@ -1,4 +1,6 @@
 ---
+import ResponsibleAILoop from "./diagrams/ResponsibleAILoop.astro";
+
 const pillars = [
   { label: "Guardrails", href: "/#expertise" },
   { label: "Evals", href: "/guides/llm-evaluation" },
@@ -9,23 +11,22 @@ const pillars = [
 
 <section id="responsible-ai" class="py-20 md:py-28 border-b border-border">
   <div class="max-w-[1200px] mx-auto px-6">
-    <div class="animate-on-scroll grid md:grid-cols-[220px_1fr] gap-10 md:gap-16">
-      <div class="flex md:flex-col gap-4 md:gap-6 items-baseline md:items-start">
-        <span class="index-numeral" aria-hidden="true">03</span>
-        <div class="section-label">Responsible AI</div>
-      </div>
-
+    <div class="animate-on-scroll grid lg:grid-cols-[1fr_minmax(0,560px)] gap-12 lg:gap-16 items-center">
       <div class="flex flex-col gap-6">
-        <p class="font-display text-3xl md:text-5xl font-medium leading-[1.1] max-w-3xl">
-          I build AI systems people can trust — governed, evaluated, and <em class="text-primary italic">safe by design</em>, not by accident.
+        <div class="flex items-center gap-5 -ml-1">
+          <span class="index-numeral" aria-hidden="true">03</span>
+          <div class="section-label">Responsible AI</div>
+        </div>
+
+        <h2 class="font-display text-3xl md:text-[2.5rem] font-medium leading-[1.1] max-w-[30rem]">
+          AI systems people can trust - <em class="text-primary italic">safe by design,</em> not by accident.
+        </h2>
+
+        <p class="text-base text-muted-foreground leading-relaxed max-w-[33rem]">
+          "Responsible AI" is usually a slide from a compliance team that never shipped a model.
+          For me it's an engineering loop that runs on every release.
         </p>
-        <p class="text-muted-foreground leading-relaxed max-w-[33rem]">
-          "Responsible AI" is usually a slide from a compliance team that never
-          shipped a model. For me it's an engineering discipline: guardrails that
-          actually constrain outputs, eval suites that catch regressions before
-          users do, a human in the loop wherever the cost of a wrong answer is
-          real, and adversarial testing before the internet does it for me.
-        </p>
+
         <div class="flex flex-wrap gap-x-8 pt-2 border-t border-border">
           {pillars.map((pillar) =>
             pillar.href ? (
@@ -37,6 +38,10 @@ const pillars = [
             )
           )}
         </div>
+      </div>
+
+      <div class="lg:pl-4">
+        <ResponsibleAILoop />
       </div>
     </div>
   </div>
