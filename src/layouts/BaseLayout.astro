@@ -1,6 +1,6 @@
 ---
 import "@fontsource-variable/urbanist";
-import "@fontsource-variable/manrope";
+import "@fontsource-variable/fraunces";
 import "@fontsource-variable/jetbrains-mono";
 import "../styles/globals.css";
 import SEO from "../components/SEO.astro";
@@ -21,9 +21,14 @@ const { title, description, keywords, ogImage, ogImageWidth, ogImageHeight, cano
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="oklch(0.15 0.006 60)" />
+    <!-- viewport-fit=cover pairs with the env(safe-area-inset-*) rules in
+         globals.css so content clears the notch / Dynamic Island in landscape -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Hex, not oklch(): Safari does not parse OKLCH here and silently drops
+         the value, which left the iOS toolbar tint at its default. -->
+    <meta name="theme-color" content="#0d0806" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <SEO
       title={title}
       description={description}

@@ -41,7 +41,7 @@ const mtechzillaColumn = [
       <div class="grid md:grid-cols-[280px_1fr] gap-12 md:gap-20">
         <div class="flex flex-col gap-6">
           <div>
-            <p class="text-base font-bold tracking-wide mb-3">Sharvin Shah</p>
+            <p class="font-display italic text-xl font-medium tracking-wide mb-3">Sharvin Shah</p>
             <p class="text-sm leading-relaxed text-muted-foreground">
               CEO &amp; Chief AI Officer at MTechZilla. Building AI systems for
               startups since 2021.
@@ -56,7 +56,7 @@ const mtechzillaColumn = [
                 href="https://www.mtechzilla.com/contact"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-70 text-primary"
+                class="tap-link text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-70 text-primary"
               >
                 mtechzilla.com/contact
               </a>
@@ -69,7 +69,7 @@ const mtechzillaColumn = [
                 href={FCC_URL}
                 target="_blank"
                 rel="noopener"
-                class="text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-70 text-primary"
+                class="tap-link text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-70 text-primary"
               >
                 freeCodeCamp
               </a>
@@ -82,10 +82,10 @@ const mtechzillaColumn = [
             <p class="font-mono text-xs font-bold uppercase tracking-widest mb-4 text-primary">
               Navigation
             </p>
-            <ul class="flex flex-col gap-2.5">
+            <ul class="flex flex-col">
               {navColumn.map(({ label, href }) => (
                 <li>
-                  <a href={href} class="text-sm text-muted-foreground transition-colors hover:opacity-70">
+                  <a href={href} class="tap-link text-sm text-muted-foreground transition-colors hover:opacity-70">
                     {label}
                   </a>
                 </li>
@@ -97,10 +97,10 @@ const mtechzillaColumn = [
             <p class="font-mono text-xs font-bold uppercase tracking-widest mb-4 text-primary">
               Guides
             </p>
-            <ul class="flex flex-col gap-2.5">
+            <ul class="flex flex-col">
               {guidesColumn.map(({ label, href }) => (
                 <li>
-                  <a href={href} class="text-sm text-muted-foreground transition-colors hover:opacity-70">
+                  <a href={href} class="tap-link text-sm text-muted-foreground transition-colors hover:opacity-70">
                     {label}
                   </a>
                 </li>
@@ -112,14 +112,14 @@ const mtechzillaColumn = [
             <p class="font-mono text-xs font-bold uppercase tracking-widest mb-4 text-primary">
               MTechZilla
             </p>
-            <ul class="flex flex-col gap-2.5">
+            <ul class="flex flex-col">
               {mtechzillaColumn.map(({ label, href }) => (
                 <li>
                   <a
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-sm text-muted-foreground transition-colors hover:opacity-70"
+                    class="tap-link text-sm text-muted-foreground transition-colors hover:opacity-70"
                   >
                     {label}
                   </a>

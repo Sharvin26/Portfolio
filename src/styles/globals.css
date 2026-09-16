@@ -19,7 +19,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --font-sans: "Urbanist Variable", system-ui, sans-serif;
-  --font-display: "Manrope Variable", system-ui, sans-serif;
+  --font-display: "Fraunces Variable", "Iowan Old Style", serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, "Cascadia Code", Menlo, monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -28,23 +28,28 @@
 }
 
 :root {
+  /* Tells Safari/iOS to render scrollbars, form controls and pickers dark,
+     and stops the white flash before first paint. */
+  color-scheme: dark;
+
   --radius: 0rem;
 
-  /* Amber/gold accent scale (OKLCH) — the site's single accent color */
+  /* Amber/gold accent scale (OKLCH) - the site's single accent color */
   --accent-700: oklch(0.55 0.15 65);
   --accent-600: oklch(0.66 0.17 68);
   --accent-500: oklch(0.77 0.16 71);
   --accent-400: oklch(0.85 0.12 78);
   --accent-300: oklch(0.92 0.06 82);
 
-  /* Warm charcoal neutral scale — dark theme only, no light variant */
-  --neutral-900: oklch(0.15 0.006 60);
-  --neutral-800: oklch(0.205 0.007 62);
-  --neutral-700: oklch(0.27 0.008 64);
-  --neutral-600: oklch(0.37 0.009 66);
-  --neutral-500: oklch(0.56 0.01 70);
-  --neutral-300: oklch(0.74 0.008 76);
-  --neutral-100: oklch(0.97 0.004 90);
+  /* Warm espresso neutral scale - dark theme only, no light variant */
+  --neutral-900: oklch(0.14 0.012 45);
+  --neutral-800: oklch(0.19 0.014 45);
+  --neutral-700: oklch(0.25 0.015 46);
+  --neutral-650: oklch(0.49 0.016 47);
+  --neutral-600: oklch(0.35 0.017 48);
+  --neutral-500: oklch(0.66 0.014 55);
+  --neutral-300: oklch(0.76 0.01 65);
+  --neutral-100: oklch(0.97 0.006 80);
 
   /* Semantic tokens */
   --background: var(--neutral-900);
@@ -68,15 +73,21 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+  html {
+    overflow-x: hidden;
+    /* Stop iOS Safari inflating body text on orientation change */
+    -webkit-text-size-adjust: 100%;
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
     font-family: "Urbanist Variable", system-ui, sans-serif;
     font-weight: 400;
     line-height: 1.7;
-    background-image: radial-gradient(oklch(0.27 0.008 64) 1px, transparent 1px);
-    background-size: 28px 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
     background-attachment: fixed;
   }
   h1, h2, h3, h4, h5, h6 {
@@ -85,7 +96,8 @@
     line-height: 1.1;
   }
   .font-display {
-    font-family: "Manrope Variable", system-ui, sans-serif;
+    font-family: "Fraunces Variable", "Iowan Old Style", serif;
+    font-optical-sizing: auto;
   }
   code, pre, .font-mono {
     font-family: "JetBrains Mono Variable", ui-monospace, "Cascadia Code", Menlo, monospace;
@@ -181,6 +193,12 @@ pre.astro-code {
 
 .nav-link {
   position: relative;
+  /* HIG 44x44pt minimum. Padding grows the target without changing the
+     type size; the nav gap is reduced to compensate so the bar looks the same. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 0.5rem;
   font-size: 1rem;
   letter-spacing: 0.01em;
   font-weight: 500;
@@ -197,8 +215,8 @@ pre.astro-code {
 .nav-link::after {
   content: '';
   position: absolute;
-  bottom: -2px;
-  left: 0;
+  bottom: 0.6rem;
+  left: 0.5rem;
   width: 0;
   height: 1.5px;
   background-color: var(--accent);
@@ -206,7 +224,7 @@ pre.astro-code {
 }
 
 .nav-link:hover::after {
-  width: 100%;
+  width: calc(100% - 1rem);
 }
 
 .nav-scrolled {
@@ -220,6 +238,7 @@ pre.astro-code {
 .nav-cta {
   display: inline-flex;
   align-items: center;
+  min-height: 44px;
   padding: 0.5rem 1.25rem;
   background-color: var(--accent-500);
   color: var(--neutral-900);
@@ -308,11 +327,30 @@ pre.astro-code {
 /* ─── Section index numerals ─────────────────────────────── */
 
 .index-numeral {
-  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
-  font-size: 5rem;
-  font-weight: 700;
+  font-family: "Fraunces Variable", serif;
+  font-optical-sizing: auto;
+  font-style: italic;
+  font-size: 5.5rem;
+  font-weight: 500;
   line-height: 1;
-  color: var(--border);
+  color: var(--neutral-650);
+}
+
+/* ─── Ambient glow (adds depth behind hero/CTA moments) ──── */
+
+.ambient-glow {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.ambient-glow::before {
+  content: '';
+  position: absolute;
+  inset: -20% -10%;
+  z-index: -1;
+  background: radial-gradient(ellipse 60% 50% at 30% 20%, oklch(0.55 0.15 65 / 0.16), transparent 70%);
+  pointer-events: none;
 }
 
 /* ─── Expertise index rows (replaces card-grid pattern) ──── */
@@ -368,8 +406,9 @@ pre.astro-code {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  /* HIG 44x44pt minimum */
+  width: 2.75rem;
+  height: 2.75rem;
   border: 1px solid var(--border);
   color: var(--neutral-500);
   transition: border-color 0.2s ease, color 0.2s ease;
@@ -437,9 +476,10 @@ pre.astro-code {
 /* ─── Long-form guide prose ──────────────────────────────── */
 
 .prose-content {
-  font-size: 1.0625rem;
+  font-size: 1.125rem;
   line-height: 1.75;
-  color: var(--muted-foreground);
+  /* HIG: body copy is the primary label colour; muted is for supporting text only */
+  color: var(--foreground);
 }
 
 .prose-content > * + * {
@@ -447,9 +487,11 @@ pre.astro-code {
 }
 
 .prose-content h2 {
-  font-family: "Manrope Variable", system-ui, sans-serif;
+  font-family: "Fraunces Variable", "Iowan Old Style", serif;
+  font-optical-sizing: auto;
   font-size: 1.75rem;
-  font-weight: 800;
+  font-weight: 600;
+  line-height: 1.2;
   color: var(--foreground);
   scroll-margin-top: 5rem;
   margin-top: 3rem;
@@ -464,6 +506,11 @@ pre.astro-code {
 }
 
 .prose-content p, .prose-content li {
+  color: var(--foreground);
+}
+
+/* Figure captions and other supporting text stay secondary */
+.prose-content figcaption {
   color: var(--muted-foreground);
 }
 
@@ -544,6 +591,131 @@ pre.astro-code {
 
 .faq-item p {
   padding-bottom: 1.25rem;
-  color: var(--muted-foreground);
+  color: var(--foreground);
   line-height: 1.7;
+  max-width: 35rem;
+}
+
+/* ─── Focus indicator (HIG: focus must be obvious) ───────── */
+/* Replaces the UA default 1px amber-at-50% ring, which was far too
+   faint against a near-black background. :focus-visible so pointer
+   clicks don't ring, only keyboard/AT navigation. */
+
+:focus-visible {
+  outline: 2px solid var(--accent-500);
+  outline-offset: 2px;
+}
+
+.expertise-row:focus-visible,
+.card-hover:focus-visible {
+  outline-offset: -2px;
+}
+
+/* ─── Reduce Motion (HIG: honour the system setting) ─────── */
+/* Critical: the hero/scroll animations use animation-fill-mode: both
+   with delays, so content sits at opacity 0 until they run. Disabling
+   animation must therefore also force the end state, not just shorten
+   the duration, or the content would never appear. */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-hero-fade,
+  .animate-word-reveal,
+  .animate-hero-rule,
+  .animate-on-scroll {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .btn-primary:hover,
+  .btn-outline:hover {
+    transform: none;
+  }
+}
+
+/* ─── Safe-area insets (notch / Dynamic Island / home bar) ─ */
+/* Paired with viewport-fit=cover in BaseLayout. Applied to the shared
+   gutter utility so every content column clears the sensor housing in
+   landscape without breaking full-bleed section backgrounds. */
+
+@supports (padding: max(0px, env(safe-area-inset-left))) {
+  .px-6 {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+
+  header[data-navbar] {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  footer {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ─── Hit targets (HIG: 44x44pt minimum) ─────────────────── */
+
+/* Expands a link's touch target to 44px tall without changing layout.
+   Only for places where real padding would distort the composition
+   (breadcrumbs), and only where nothing sits within 44px vertically,
+   so expanded targets can't overlap. */
+.tap-target {
+  position: relative;
+}
+
+.tap-target::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  min-width: 44px;
+  width: 100%;
+  top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
+}
+
+/* Links that can take real padding */
+.tap-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ─── Homepage section anchors ───────────────────────────── */
+/* Clears the 64px sticky navbar on anchor navigation, matching the
+   behaviour the guide TOC already had. */
+
+#about,
+#expertise,
+#responsible-ai,
+#experience,
+#stack {
+  scroll-margin-top: 5rem;
+}
+
+/* ─── Guide reading measure ──────────────────────────────── */
+/* Running text is capped near 70 characters; code blocks, diagrams and
+   figures keep the full column so snippets aren't cramped. Urbanist's
+   average glyph is ~0.45em, so `ch`-based caps (max-w-prose) run ~20%
+   too wide here — hence the explicit rem value. */
+
+.prose-content > p,
+.prose-content > ul,
+.prose-content > ol,
+.prose-content > blockquote,
+.prose-content > h2,
+.prose-content > h3 {
+  max-width: 35rem;
 }

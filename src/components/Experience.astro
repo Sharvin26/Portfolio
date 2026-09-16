@@ -6,10 +6,10 @@ import ExperienceItem from "./ExperienceItem.astro";
   <div class="max-w-[1200px] mx-auto px-6">
     <div class="animate-on-scroll grid md:grid-cols-[220px_1fr] gap-10 md:gap-16">
       <div class="flex md:flex-col gap-4 md:gap-6 items-baseline md:items-start">
-        <span class="index-numeral">04</span>
+        <span class="index-numeral" aria-hidden="true">04</span>
         <div>
           <div class="section-label mb-3">Experience</div>
-          <h2 class="font-display text-2xl md:text-3xl font-extrabold leading-tight">
+          <h2 class="font-display text-2xl md:text-3xl font-semibold leading-tight">
             Where I've<br />Built &amp; Led
           </h2>
         </div>
@@ -21,13 +21,13 @@ import ExperienceItem from "./ExperienceItem.astro";
           company="MTechZilla"
           period="Feb 2021 – Present"
           current
-          description="I built MTechZilla to give startups real engineering support — without the overhead of a large agency. Today most of that work is AI systems: RAG pipelines, agents, and the eval and guardrail infrastructure that makes them safe to ship. Clients arrive with an AI idea and leave with a system that's been tested against failure, not just a happy path."
+          description="I built MTechZilla to give startups real engineering support - without the overhead of a large agency. Today most of that work is AI systems: RAG pipelines, agents, and the eval and guardrail infrastructure that makes them safe to ship. Clients arrive with an AI idea and leave with a system that's been tested against failure, not just a happy path."
         />
         <ExperienceItem
           title="Contributor"
           company="freeCodeCamp"
           period="May 2020 – Present"
-          description="I write practical guides on AI systems, SaaS architecture, and lessons from shipping real products. No toy examples — just what actually works in production."
+          description="I write practical guides on AI systems, SaaS architecture, and lessons from shipping real products. No toy examples - just what actually works in production."
         />
         <ExperienceItem
           title="Software Developer"

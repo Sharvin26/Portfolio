@@ -10,23 +10,18 @@ const notes = [
   <div class="max-w-[1200px] mx-auto px-6">
     <div class="animate-on-scroll grid md:grid-cols-[220px_1fr] gap-10 md:gap-16">
       <div class="flex md:flex-col gap-4 md:gap-6 items-baseline md:items-start">
-        <span class="index-numeral">01</span>
+        <span class="index-numeral" aria-hidden="true">01</span>
         <div>
           <div class="section-label mb-3">About Me</div>
-          <h2 class="font-display text-2xl md:text-3xl font-extrabold leading-tight">
-            AI practitioner.<br /><span class="text-primary">Still shipping code.</span>
+          <h2 class="font-display text-3xl md:text-4xl font-medium leading-tight">
+            AI practitioner.<br /><em class="text-primary italic">Still shipping code.</em>
           </h2>
         </div>
       </div>
 
       <div class="flex flex-col gap-8">
         <p class="text-xl md:text-2xl leading-snug font-medium max-w-2xl">
-          I started MTechZilla because too many good ideas were dying from bad execution.
-          The highest-leverage work has since moved from "build the app" to
-          <span class="text-primary">"build the AI system inside the app"</span> — so
-          that's where I put my own hands now: retrieval pipelines, agent orchestration,
-          evals, and the unglamorous guardrail work that keeps a model from embarrassing
-          a client in production.
+          I started MTechZilla because too many good ideas were dying from bad execution. The highest-leverage work has since moved from "build the app" to <span class="text-primary">"build the AI system inside the app."</span> That's where I put my own hands now — retrieval, agents, and evals.
         </p>
 
         <div class="grid sm:grid-cols-3 gap-6 border-t border-border pt-6">
@@ -38,9 +33,9 @@ const notes = [
           ))}
         </div>
 
-        <p class="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+        <p class="text-base text-muted-foreground leading-relaxed max-w-[33rem]">
           I've built across the stack for over a decade, which is exactly why I don't
-          treat AI features as a bolt-on demo — an agent still needs a real API contract,
+          treat AI features as a bolt-on demo - an agent still needs a real API contract,
           a cost budget, an eval suite, and a rollback plan. I also write regularly on
           freeCodeCamp; if I've solved a problem worth documenting, I'd rather share it
           than let it collect dust.

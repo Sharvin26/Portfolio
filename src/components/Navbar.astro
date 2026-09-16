@@ -13,15 +13,15 @@ const navLinks = [
 ---
 
 <header class="sticky top-0 z-50 w-full transition-all duration-300 bg-background border-b border-border" data-navbar>
-  <div class="max-w-[1200px] mx-auto px-6 flex h-14 items-center justify-between">
+  <div class="max-w-[1200px] mx-auto px-6 flex h-16 items-center justify-between">
     <a
       href="/"
-      class="shrink-0 text-base font-bold tracking-wide text-foreground hover:text-primary transition-colors"
+      class="font-display italic shrink-0 inline-flex items-center min-h-[44px] text-xl font-medium tracking-wide text-foreground hover:text-primary transition-colors"
     >
       Sharvin Shah
     </a>
 
-    <nav class="hidden md:flex items-center gap-8">
+    <nav class="hidden md:flex items-center gap-5">
       {navLinks.map(({ label, href, external }) => (
         <a
           href={href}
@@ -41,9 +41,10 @@ const navLinks = [
     </div>
 
     <button
-      class="hamburger-btn md:hidden flex flex-col justify-center gap-[5px] p-1"
+      class="hamburger-btn md:hidden flex flex-col items-center justify-center gap-[5px] min-w-[44px] min-h-[44px] -mr-2.5"
       aria-label="Toggle menu"
       aria-expanded="false"
+      aria-controls="mobile-menu"
       data-menu-toggle
     >
       <span class="block h-px w-5 bg-foreground"></span>
@@ -52,13 +53,17 @@ const navLinks = [
     </button>
   </div>
 
-  <div class="hidden md:hidden bg-background border-t border-border px-6 py-5 flex-col gap-4" data-mobile-menu>
+  <div
+    id="mobile-menu"
+    class="hidden md:hidden bg-background border-t border-border px-6 py-3 flex-col"
+    data-mobile-menu
+  >
     {navLinks.map(({ label, href, external }) => (
       <a
         href={href}
         target={external ? "_blank" : undefined}
         rel={external ? "noopener" : undefined}
-        class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        class="tap-link text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
         data-mobile-link
       >
         {label}
@@ -68,7 +73,7 @@ const navLinks = [
       href="https://www.mtechzilla.com/contact"
       target="_blank"
       rel="noopener noreferrer"
-      class="nav-cta self-start mt-1"
+      class="nav-cta self-start mt-3 mb-2"
       data-mobile-link
     >
       Talk to Me About AI
@@ -93,11 +98,15 @@ const navLinks = [
     { passive: true }
   );
 
-  const closeMenu = () => {
+  const isMenuOpen = () => mobileMenu?.classList.contains("flex") === true;
+
+  const closeMenu = ({ refocus = false } = {}) => {
+    if (!isMenuOpen()) return;
     mobileMenu?.classList.add("hidden");
     mobileMenu?.classList.remove("flex");
     toggleBtn?.classList.remove("is-open");
     toggleBtn?.setAttribute("aria-expanded", "false");
+    if (refocus) toggleBtn?.focus();
   };
 
   toggleBtn?.addEventListener("click", () => {
@@ -105,9 +114,29 @@ const navLinks = [
     mobileMenu?.classList.toggle("flex", isOpen);
     toggleBtn.classList.toggle("is-open", isOpen);
     toggleBtn.setAttribute("aria-expanded", String(isOpen));
+    // Move focus into the menu so keyboard and VoiceOver users land there
+    if (isOpen) mobileMenu?.querySelector<HTMLAnchorElement>("[data-mobile-link]")?.focus();
   });
 
   mobileMenu?.querySelectorAll("[data-mobile-link]").forEach((link) => {
-    link.addEventListener("click", closeMenu);
+    link.addEventListener("click", () => closeMenu());
+  });
+
+  // Escape dismisses and returns focus to the toggle
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeMenu({ refocus: true });
+  });
+
+  // Tapping outside the menu dismisses it
+  document.addEventListener("click", (event) => {
+    if (!isMenuOpen()) return;
+    const target = event.target as Node;
+    if (mobileMenu?.contains(target) || toggleBtn?.contains(target)) return;
+    closeMenu();
+  });
+
+  // Resizing up to the desktop breakpoint leaves no orphaned open menu
+  window.matchMedia("(min-width: 768px)").addEventListener("change", (e) => {
+    if (e.matches) closeMenu();
   });
 </script>
