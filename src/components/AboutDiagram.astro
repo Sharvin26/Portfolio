@@ -1,0 +1,82 @@
+---
+const surface = "oklch(0.205 0.007 62)";
+const stroke = "oklch(0.37 0.009 66)";
+const text = "oklch(0.97 0.004 90)";
+const muted = "oklch(0.66 0.014 55)";
+const accent = "oklch(0.77 0.16 71)";
+
+const layers = [
+  { label: "RETRIEVAL", note: "grounded in your data" },
+  { label: "AGENTS", note: "tools, plans, retries" },
+  { label: "EVALS", note: "proof it still works" },
+];
+---
+
+<figure class="about-diagram m-0">
+  <svg
+    viewBox="0 0 360 318"
+    role="img"
+    aria-labelledby="about-diagram-title about-diagram-desc"
+    class="w-full h-auto"
+  >
+    <title id="about-diagram-title">Where the AI system sits inside a product</title>
+    <desc id="about-diagram-desc">
+      Users and your data sit either side of a product. Nested inside that product is the AI
+      system layer, made up of retrieval, agents, and evaluation - the part I build.
+    </desc>
+
+    <defs>
+      <marker id="about-arrow" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+        <path d="M0,0 L7,3.5 L0,7 Z" fill={stroke} />
+      </marker>
+    </defs>
+
+    <!-- Users in -->
+    <text x="12" y="32" font-size="11" font-family="monospace" letter-spacing="1.6" fill={muted}>USERS</text>
+    <line x1="14" y1="44" x2="14" y2="70" stroke={stroke} stroke-width="1" marker-end="url(#about-arrow)" />
+
+    <!-- Product shell -->
+    <rect x="12" y="76" width="336" height="182" fill="none" stroke={stroke} stroke-width="1" />
+    <text x="26" y="99" font-size="11" font-family="monospace" letter-spacing="1.6" fill={muted}>PRODUCT</text>
+
+    <!-- AI system core -->
+    <rect x="26" y="112" width="308" height="130" fill={surface} stroke={accent} stroke-width="1.5" />
+    <text x="40" y="135" font-size="11" font-family="monospace" letter-spacing="1.6" fill={accent}>AI SYSTEM</text>
+    <circle cx="318" cy="131" r="3" fill={accent} />
+
+    {layers.map((layer, i) => (
+      <>
+        <line x1="40" y1={151 + i * 29} x2="320" y2={151 + i * 29} stroke={stroke} stroke-width="1" opacity="0.6" />
+        <text x="40" y={170 + i * 29} font-size="13" font-family="monospace" letter-spacing="0.8" fill={text}>
+          {layer.label}
+        </text>
+        <text
+          x="320"
+          y={170 + i * 29}
+          font-size="11"
+          font-family="monospace"
+          text-anchor="end"
+          fill={muted}
+          class="about-diagram-note"
+        >
+          {layer.note}
+        </text>
+      </>
+    ))}
+
+    <!-- Data in -->
+    <line x1="14" y1="264" x2="14" y2="284" stroke={stroke} stroke-width="1" />
+    <text x="12" y="304" font-size="11" font-family="monospace" letter-spacing="1.6" fill={muted}>YOUR DATA</text>
+  </svg>
+</figure>
+
+<style>
+  /* Below the lg breakpoint the diagram scales down far enough that the
+     secondary notes drop under a legible size, so they are dropped rather
+     than rendered too small to read. */
+  @media (max-width: 1023px) {
+    .about-diagram-note {
+      display: none;
+    }
+  }
+</style>

@@ -247,7 +247,7 @@ pre.astro-code {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  min-height: 56px;
+  min-height: 60px;
   padding-inline: 0.625rem;
 }
 
@@ -356,24 +356,37 @@ pre.astro-code {
 .nav-cta {
   display: inline-flex;
   align-items: center;
+  gap: 0.5rem;
   flex-shrink: 0;
+  /* HIG 44x44pt target, but a solid amber slab was too heavy against the
+     thin mono links - ghost treatment keeps the weight down and leaves the
+     filled amber CTA in the hero as the one loud call to action. */
   min-height: 44px;
   padding: 0.5rem 1.125rem;
-  background-color: var(--accent-500);
-  color: var(--neutral-900);
+  background-color: transparent;
+  color: var(--accent-500);
   font-family: "JetBrains Mono Variable", ui-monospace, monospace;
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-decoration: none;
-  border: 1px solid var(--accent-500);
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  border: 1px solid oklch(0.77 0.16 71 / 0.55);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.nav-cta .nav-cta-arrow {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .nav-cta:hover {
-  background-color: var(--accent-400);
-  border-color: var(--accent-400);
+  background-color: var(--accent-500);
+  border-color: var(--accent-500);
+  color: var(--neutral-900);
+}
+
+.nav-cta:hover .nav-cta-arrow {
+  transform: translateX(3px);
 }
 
 /* ─── Mobile menu (expands the island downward) ─── */

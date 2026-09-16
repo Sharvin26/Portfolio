@@ -4,11 +4,6 @@ const navLinks = [
   { label: "Expertise", href: "/#expertise" },
   { label: "Experience", href: "/#experience" },
   { label: "Guides", href: "/guides" },
-  {
-    label: "Blog",
-    href: "https://www.freecodecamp.org/news/author/Sharvin26/",
-    external: true,
-  },
 ];
 ---
 
@@ -21,13 +16,8 @@ const navLinks = [
       </a>
 
       <nav class="nav-links" aria-label="Primary">
-        {navLinks.map(({ label, href, external }) => (
-          <a
-            href={href}
-            target={external ? "_blank" : undefined}
-            rel={external ? "noopener" : undefined}
-            class="nav-link"
-          >
+        {navLinks.map(({ label, href }) => (
+          <a href={href} class="nav-link">
             {label}
           </a>
         ))}
@@ -36,6 +26,7 @@ const navLinks = [
       <div class="hidden md:flex shrink-0">
         <a href="https://www.mtechzilla.com/contact" target="_blank" rel="noopener noreferrer" class="nav-cta">
           Talk to Me About AI
+          <span class="nav-cta-arrow" aria-hidden="true">&#8594;</span>
         </a>
       </div>
 
@@ -53,11 +44,9 @@ const navLinks = [
     </div>
 
     <div id="mobile-menu" class="nav-mobile-menu hidden" data-mobile-menu>
-      {navLinks.map(({ label, href, external }) => (
+      {navLinks.map(({ label, href }) => (
         <a
           href={href}
-          target={external ? "_blank" : undefined}
-          rel={external ? "noopener" : undefined}
           class="tap-link text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
           data-mobile-link
         >
@@ -72,6 +61,7 @@ const navLinks = [
         data-mobile-link
       >
         Talk to Me About AI
+        <span class="nav-cta-arrow" aria-hidden="true">&#8594;</span>
       </a>
     </div>
   </div>
