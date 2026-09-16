@@ -1,12 +1,5 @@
 ---
 import ResponsibleAILoop from "./diagrams/ResponsibleAILoop.astro";
-
-const pillars = [
-  { label: "Guardrails", href: "/#expertise" },
-  { label: "Evals", href: "/guides/llm-evaluation" },
-  { label: "Human Oversight" },
-  { label: "Red Teaming" },
-];
 ---
 <section id="responsible-ai" class="py-20 md:py-28 border-b border-border">
   <div class="max-w-[1200px] mx-auto px-6">
@@ -25,18 +18,6 @@ const pillars = [
           "Responsible AI" is usually a slide from a compliance team that never shipped a model.
           For me it's an engineering loop that runs on every release.
         </p>
-
-        <div class="flex flex-wrap gap-x-8 pt-2 border-t border-border">
-          {pillars.map((pillar) =>
-            pillar.href ? (
-              <a href={pillar.href} class="tap-link font-mono text-sm text-primary hover:underline underline-offset-4">
-                {pillar.label}
-              </a>
-            ) : (
-              <span class="tap-link font-mono text-sm text-foreground">{pillar.label}</span>
-            )
-          )}
-        </div>
       </div>
 
       <div class="lg:pl-4">
