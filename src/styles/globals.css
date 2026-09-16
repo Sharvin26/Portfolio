@@ -248,7 +248,8 @@ pre.astro-code {
   justify-content: space-between;
   gap: 0.75rem;
   min-height: 60px;
-  padding-inline: 0.625rem;
+  padding-left: 0.625rem;
+  padding-right: 0;
 }
 
 /* ─── Wordmark ─── */
@@ -353,17 +354,19 @@ pre.astro-code {
 
 /* ─── CTA ─── */
 
+/* The CTA is a segment OF the island, flush to its right edge, rather
+   than a bordered box floating inside it - two nested hairline frames
+   9px apart read as cramped. A left divider separates it from the links. */
 .nav-cta {
-  display: inline-flex;
+  display: none;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   flex-shrink: 0;
-  /* HIG 44x44pt target, but a solid amber slab was too heavy against the
-     thin mono links - ghost treatment keeps the weight down and leaves the
-     filled amber CTA in the hero as the one loud call to action. */
+  align-self: stretch;
   min-height: 44px;
-  padding: 0.5rem 1.125rem;
-  background-color: transparent;
+  padding-inline: 1.375rem;
+  background-color: oklch(0.77 0.16 71 / 0.1);
   color: var(--accent-500);
   font-family: "JetBrains Mono Variable", ui-monospace, monospace;
   font-size: 0.6875rem;
@@ -371,22 +374,54 @@ pre.astro-code {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-decoration: none;
-  border: 1px solid oklch(0.77 0.16 71 / 0.55);
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  border: none;
+  border-left: 1px solid var(--border);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.nav-cta .nav-cta-arrow {
+.nav-cta-arrow {
   transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .nav-cta:hover {
   background-color: var(--accent-500);
-  border-color: var(--accent-500);
   color: var(--neutral-900);
 }
 
 .nav-cta:hover .nav-cta-arrow {
   transform: translateX(3px);
+}
+
+@media (min-width: 768px) {
+  .nav-cta {
+    display: inline-flex;
+  }
+}
+
+/* In the dropdown there is no nesting problem, so the CTA is a normal
+   filled button. */
+.nav-cta-mobile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0.5rem 1.25rem;
+  background-color: var(--accent-500);
+  color: var(--neutral-900);
+  font-family: "JetBrains Mono Variable", ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid var(--accent-500);
+  transition: background-color 0.2s ease;
+}
+
+.nav-cta-mobile:hover {
+  background-color: var(--accent-400);
+  border-color: var(--accent-400);
 }
 
 /* ─── Mobile menu (expands the island downward) ─── */
@@ -864,17 +899,21 @@ pre.astro-code {
 /* Contracted: cluster glyph, links and CTA toward the centre instead of
    leaving the collapsed wordmark stranded against the left edge. */
 .nav-island.is-contracted .nav-island-inner {
-  justify-content: center;
+  /* Cluster the glyph and links together on the left so the collapsed
+     wordmark is not stranded, but keep the CTA pinned to the right edge
+     so it stays a flush segment of the island. */
+  justify-content: flex-start;
   gap: 0.25rem;
+}
+
+.nav-island.is-contracted .nav-cta {
+  margin-left: auto;
 }
 
 .nav-island.is-contracted .nav-wordmark {
   padding-inline: 0.375rem 0.5rem;
 }
 
-.nav-island.is-contracted .nav-cta {
-  margin-left: 0.5rem;
-}
 
 /* ─── Stack layer panel ──────────────────────────────────── */
 /* Reads as a layered architecture rather than the 40-line YAML dump it
