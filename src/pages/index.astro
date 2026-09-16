@@ -1,0 +1,66 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Navbar from "../components/Navbar.astro";
+import Hero from "../components/Hero.astro";
+import About from "../components/About.astro";
+import Experience from "../components/Experience.astro";
+import Skills from "../components/Skills.astro";
+import Hobbies from "../components/Hobbies.astro";
+import Footer from "../components/Footer.astro";
+
+const siteDescription =
+  "Sharvin Shah is the Founder & CEO of MTechZilla, a software agency helping startups and businesses build full-stack web apps, mobile apps, and AI tools. Based in India.";
+
+const keywords = [
+  "Sharvin Shah",
+  "MTechZilla",
+  "software agency India",
+  "software development agency",
+  "startup software development",
+  "full-stack development",
+  "SaaS development",
+  "web development",
+  "mobile app development",
+  "AI development",
+  "hire software engineer India",
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Sharvin Shah",
+  url: "https://sharvinshah.com",
+  image: "https://sharvinshah.com/sharvin.png",
+  jobTitle: "Founder & CEO",
+  worksFor: {
+    "@type": "Organization",
+    name: "MTechZilla",
+    url: "https://www.mtechzilla.com",
+  },
+  sameAs: [
+    "https://x.com/sharvinshah26",
+    "https://www.linkedin.com/in/sharvinshah/",
+    "https://github.com/Sharvin26",
+  ],
+  description: siteDescription,
+};
+---
+
+<BaseLayout
+  title="Sharvin Shah | Founder of MTechZilla - Software Agency"
+  description={siteDescription}
+  keywords={keywords}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+  <div class="flex min-h-screen flex-col bg-background">
+    <Navbar />
+    <Hero />
+    <main>
+      <About />
+      <Experience />
+      <Skills />
+      <Hobbies />
+    </main>
+    <Footer />
+  </div>
+</BaseLayout>

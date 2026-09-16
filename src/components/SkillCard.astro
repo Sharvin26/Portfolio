@@ -1,0 +1,26 @@
+---
+interface Props {
+  number: string;
+  title: string;
+  skills: string[];
+}
+
+const { number, title, skills } = Astro.props;
+---
+
+<div class="skill-card-hover p-6 flex flex-col gap-4" style="background-color: var(--neutral-200)">
+  <span class="text-xs font-bold tracking-widest" style="color: var(--neutral-700)">
+    {number}
+  </span>
+  <h3 class="text-lg font-bold leading-tight">{title}</h3>
+  <div class="flex flex-wrap gap-1.5">
+    {skills.map((skill) => (
+      <span
+        class="text-xs font-medium px-2.5 py-1"
+        style="background-color: var(--primary-100); color: var(--primary-700)"
+      >
+        {skill}
+      </span>
+    ))}
+  </div>
+</div>

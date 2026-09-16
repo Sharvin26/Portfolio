@@ -1,0 +1,114 @@
+---
+const navLinks = [
+  { label: "About", href: "#about" },
+  { label: "Experience", href: "#experience" },
+  { label: "Skills", href: "#skills" },
+  { label: "Hobbies", href: "#hobbies" },
+  { label: "Blog", href: "https://www.mtechzilla.com/blog", external: true },
+];
+---
+
+<header class="sticky top-0 z-50 w-full transition-all duration-300 bg-white border-b border-border" data-navbar>
+  <div class="max-w-[1200px] mx-auto px-6 flex h-14 items-center justify-between">
+    <a
+      href="/"
+      class="shrink-0 text-base font-bold tracking-wide text-foreground hover:text-accent transition-colors"
+    >
+      Sharvin Shah
+    </a>
+
+    <nav class="hidden md:flex items-center gap-8">
+      {navLinks.map(({ label, href, external }) => (
+        <a
+          href={href}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noopener noreferrer" : undefined}
+          class="nav-link"
+        >
+          {label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="hidden md:flex shrink-0">
+      <a
+        href="https://www.mtechzilla.com/contact"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="nav-cta"
+      >
+        Hire Me
+      </a>
+    </div>
+
+    <button
+      class="hamburger-btn md:hidden flex flex-col justify-center gap-[5px] p-1"
+      aria-label="Toggle menu"
+      aria-expanded="false"
+      data-menu-toggle
+    >
+      <span class="block h-px w-5 bg-foreground"></span>
+      <span class="block h-px w-5 bg-foreground"></span>
+      <span class="block h-px w-5 bg-foreground"></span>
+    </button>
+  </div>
+
+  <div class="hidden md:hidden bg-white border-t border-border px-6 py-5 flex-col gap-4" data-mobile-menu>
+    {navLinks.map(({ label, href, external }) => (
+      <a
+        href={href}
+        target={external ? "_blank" : undefined}
+        rel={external ? "noopener noreferrer" : undefined}
+        class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        data-mobile-link
+      >
+        {label}
+      </a>
+    ))}
+    <a
+      href="https://www.mtechzilla.com/contact"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="nav-cta self-start mt-1"
+      data-mobile-link
+    >
+      Hire Me
+    </a>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>("[data-navbar]");
+  const toggleBtn = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+  const mobileMenu = document.querySelector<HTMLElement>("[data-mobile-menu]");
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      const scrolled = window.scrollY > 10;
+      header?.classList.toggle("nav-scrolled", scrolled);
+      header?.classList.toggle("bg-white", !scrolled);
+      header?.classList.toggle("border-b", !scrolled);
+      header?.classList.toggle("border-border", !scrolled);
+    },
+    { passive: true }
+  );
+
+  const closeMenu = () => {
+    mobileMenu?.classList.add("hidden");
+    mobileMenu?.classList.remove("flex");
+    toggleBtn?.classList.remove("is-open");
+    toggleBtn?.setAttribute("aria-expanded", "false");
+  };
+
+  toggleBtn?.addEventListener("click", () => {
+    const isOpen = mobileMenu?.classList.toggle("hidden") === false;
+    mobileMenu?.classList.toggle("flex", isOpen);
+    toggleBtn.classList.toggle("is-open", isOpen);
+    toggleBtn.setAttribute("aria-expanded", String(isOpen));
+  });
+
+  mobileMenu?.querySelectorAll("[data-mobile-link]").forEach((link) => {
+    link.addEventListener("click", closeMenu);
+  });
+</script>

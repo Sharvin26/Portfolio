@@ -1,0 +1,38 @@
+---
+import "@fontsource-variable/urbanist";
+import "@fontsource-variable/manrope";
+import "../styles/globals.css";
+import SEO from "../components/SEO.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  keywords?: string[];
+  ogImage?: string;
+  ogImageWidth?: number;
+  ogImageHeight?: number;
+  canonical?: string;
+}
+
+const { title, description, keywords, ogImage, ogImageWidth, ogImageHeight, canonical } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <SEO
+      title={title}
+      description={description}
+      keywords={keywords}
+      ogImage={ogImage}
+      ogImageWidth={ogImageWidth}
+      ogImageHeight={ogImageHeight}
+      canonical={canonical}
+    />
+  </head>
+  <body class="antialiased">
+    <slot />
+  </body>
+</html>
