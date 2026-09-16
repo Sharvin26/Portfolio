@@ -4,51 +4,48 @@ import SkillCard from "./SkillCard.astro";
 const skillCards = [
   {
     number: "01",
-    title: "Frontend Development",
-    skills: ["React", "Next.js", "TypeScript", "Tailwind CSS"],
+    title: "AI / LLM Infrastructure",
+    skills: ["OpenAI", "Anthropic", "LangChain", "LlamaIndex", "pgvector", "vLLM"],
   },
   {
     number: "02",
     title: "Backend Development",
-    skills: ["Node.js", "Express", "REST APIs", "AI/LLM Integration"],
+    skills: ["Node.js", "Express", "REST APIs", "Python"],
   },
   {
     number: "03",
+    title: "Frontend Development",
+    skills: ["React", "Next.js", "TypeScript", "Tailwind CSS"],
+  },
+  {
+    number: "04",
     title: "Mobile Development",
     skills: ["React Native", "Flutter"],
   },
   {
-    number: "04",
+    number: "05",
     title: "Databases",
     skills: ["PostgreSQL", "MongoDB", "MySQL", "Redis", "Supabase"],
   },
   {
-    number: "05",
+    number: "06",
     title: "DevOps & Cloud",
     skills: ["AWS", "Docker", "Kubernetes", "CI/CD", "Terraform"],
-  },
-  {
-    number: "06",
-    title: "Leadership & Strategy",
-    skills: ["UI/UX Design", "Project Management", "Team Leadership", "Technical Writing"],
   },
 ];
 ---
 
-<section id="skills" class="py-20 md:py-28 border-b border-border">
+<section id="stack" class="py-16 md:py-20 border-b border-border">
   <div class="max-w-[1200px] mx-auto px-6">
     <div class="animate-on-scroll">
-      <div class="section-label mb-6">Skills &amp; Expertise</div>
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-        <h2 class="text-3xl md:text-4xl font-bold max-w-lg">Technologies I Build With</h2>
-        <p class="text-sm max-w-xs leading-relaxed" style="color: var(--neutral-500)">
-          A decade of shipping across the full stack — from mobile to cloud infrastructure.
+      <div class="section-label mb-6">Stack</div>
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <h2 class="font-display text-2xl md:text-3xl font-extrabold max-w-lg">The Engineering Underneath</h2>
+        <p class="text-sm max-w-xs leading-relaxed text-muted-foreground">
+          AI systems still need a real full-stack foundation. Here's what's under mine.
         </p>
       </div>
-      <div
-        class="grid sm:grid-cols-2 lg:grid-cols-3 gap-px border border-[oklch(0.2478_0_0)]"
-        style="background-color: var(--neutral-700)"
-      >
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-px border border-border" style="background-color: var(--border)">
         {skillCards.map((card) => (
           <SkillCard {...card} />
         ))}

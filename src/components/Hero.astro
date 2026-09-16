@@ -1,105 +1,94 @@
 ---
-import { Image } from "astro:assets";
-import sharvinPhoto from "../assets/sharvin.png";
+import { Code } from "astro:components";
 
 const stats = [
-  { value: "10+", label: "Years Experience" },
-  { value: "30+", label: "Projects Shipped" },
+  { value: "10+", label: "Years Engineering" },
+  { value: "40+", label: "Products Shipped" },
   { value: "2021", label: "Founded MTechZilla" },
   { value: "$10M+", label: "Client Revenue" },
 ];
+
+const snippet = `const searchDocs = tool({
+  name: "search_docs",
+  description: "Retrieve relevant chunks from the knowledge base",
+  parameters: z.object({
+    query: z.string(),
+    topK: z.number().default(5),
+  }),
+  execute: async ({ query, topK }) => {
+    const embedding = await embed(query);
+    const hits = await vectorStore.search(embedding, topK);
+    return rerank(hits, query);
+  },
+});`;
 ---
 
 <section class="border-b border-border">
   <div class="max-w-[1200px] mx-auto px-6 w-full py-16 md:py-24">
-    <div class="grid md:grid-cols-[1fr_300px] lg:grid-cols-[1fr_360px] gap-12 lg:gap-20 items-center">
+    <div class="grid lg:grid-cols-[1fr_460px] gap-12 lg:gap-16 items-center">
       <div class="flex flex-col gap-7">
         <div class="section-label animate-hero-fade" style="animation-delay: 0.1s">
-          Founder &amp; CEO, MTechZilla
+          <span class="inline-block w-1.5 h-1.5 rounded-full" style="background-color: var(--accent-500)"></span>
+          CEO &amp; Chief AI Officer, MTechZilla
         </div>
 
         <h1
-          class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.08] tracking-tight animate-hero-fade"
+          class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.08] tracking-tight animate-hero-fade"
           style="animation-delay: 0.2s"
         >
-          I turn product ideas<br />
-          into
-          <span style="color: var(--primary-700)">working software.</span>
+          I build AI systems<br />
+          that survive contact with
+          <span class="text-primary">production.</span>
         </h1>
 
-        <p
-          class="text-base leading-relaxed max-w-lg animate-hero-fade"
-          style="color: var(--neutral-500); animation-delay: 0.35s"
-        >
-          I'm Sharvin — Founder &amp; CEO of
+        <p class="text-base leading-relaxed max-w-lg text-muted-foreground animate-hero-fade" style="animation-delay: 0.35s">
+          I'm Sharvin — CEO &amp; Chief AI Officer at
           <a
             href="https://www.mtechzilla.com/"
             target="_blank"
             rel="noopener noreferrer"
-            class="font-semibold underline underline-offset-4"
-            style="color: var(--primary-700)"
+            class="font-semibold underline underline-offset-4 text-primary"
           >
             MTechZilla
           </a>
-          . Over 10 years building full-stack web apps, mobile apps, and AI-powered
-          tools — for startups and businesses that need real engineering, not just
-          promises.
+          . I design and ship RAG pipelines, multi-agent systems, and voice AI products
+          for teams who need engineering rigor — evals, guardrails, cost and latency
+          budgets — not a demo that falls apart in front of a real user.
         </p>
 
         <div class="flex flex-wrap gap-3 animate-hero-fade" style="animation-delay: 0.5s">
-          <a
-            href="https://www.mtechzilla.com/contact"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn-primary"
-          >
-            Work With Me →
+          <a href="https://www.mtechzilla.com/contact" target="_blank" rel="noopener noreferrer" class="btn-primary">
+            Talk to Me About AI →
           </a>
-          <a
-            href="https://www.mtechzilla.com/blog"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn-outline"
-          >
-            Read My Blog
+          <a href="#expertise" class="btn-outline">
+            See My Expertise
           </a>
         </div>
       </div>
 
       <div class="animate-hero-fade" style="animation-delay: 0.3s">
-        <div
-          class="relative w-full max-w-[260px] mx-auto md:max-w-none aspect-[3/4] overflow-hidden"
-          style="border: 1.5px solid var(--border)"
-        >
-          <Image
-            src={sharvinPhoto}
-            alt="Sharvin Shah"
-            widths={[260, 300, 360, 720]}
-            sizes="(max-width: 768px) 260px, (max-width: 1024px) 300px, 360px"
-            class="object-cover object-top w-full h-full"
-            loading="eager"
-            fetchpriority="high"
-          />
+        <div class="border border-border bg-card">
+          <div class="flex items-center gap-1.5 px-4 py-2.5 border-b border-border">
+            <span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--neutral-600)"></span>
+            <span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--neutral-600)"></span>
+            <span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--neutral-600)"></span>
+            <span class="ml-2 text-xs font-mono text-muted-foreground">tools/search-docs.ts</span>
+          </div>
+          <Code code={snippet} lang="typescript" theme="css-variables" />
         </div>
       </div>
     </div>
   </div>
 
-  <div class="animate-hero-fade" style="background-color: var(--neutral-700); animation-delay: 0.65s">
+  <div class="animate-hero-fade" style="background-color: var(--neutral-800); animation-delay: 0.65s">
     <div class="max-w-[1200px] mx-auto px-6 py-8">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0">
         {stats.map((stat) => (
-          <div
-            class="flex flex-col items-center text-center md:border-r last:border-r-0"
-            style="border-color: var(--dark-border)"
-          >
-            <span class="text-4xl md:text-5xl font-bold leading-none" style="color: var(--neutral-100)">
+          <div class="flex flex-col items-center text-center md:border-r border-border last:border-r-0">
+            <span class="font-display text-4xl md:text-5xl font-extrabold leading-none text-primary">
               {stat.value}
             </span>
-            <span
-              class="text-xs font-semibold tracking-widest uppercase mt-2"
-              style="color: var(--neutral-400)"
-            >
+            <span class="font-mono text-xs font-semibold tracking-widest uppercase mt-2 text-muted-foreground">
               {stat.label}
             </span>
           </div>

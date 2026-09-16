@@ -1,18 +1,22 @@
 ---
 const navLinks = [
-  { label: "About", href: "#about" },
-  { label: "Experience", href: "#experience" },
-  { label: "Skills", href: "#skills" },
-  { label: "Hobbies", href: "#hobbies" },
-  { label: "Blog", href: "https://www.mtechzilla.com/blog", external: true },
+  { label: "About", href: "/#about" },
+  { label: "Expertise", href: "/#expertise" },
+  { label: "Experience", href: "/#experience" },
+  { label: "Guides", href: "/guides" },
+  {
+    label: "Blog",
+    href: "https://www.freecodecamp.org/news/author/Sharvin26/",
+    external: true,
+  },
 ];
 ---
 
-<header class="sticky top-0 z-50 w-full transition-all duration-300 bg-white border-b border-border" data-navbar>
+<header class="sticky top-0 z-50 w-full transition-all duration-300 bg-background border-b border-border" data-navbar>
   <div class="max-w-[1200px] mx-auto px-6 flex h-14 items-center justify-between">
     <a
       href="/"
-      class="shrink-0 text-base font-bold tracking-wide text-foreground hover:text-accent transition-colors"
+      class="shrink-0 text-base font-bold tracking-wide text-foreground hover:text-primary transition-colors"
     >
       Sharvin Shah
     </a>
@@ -22,7 +26,7 @@ const navLinks = [
         <a
           href={href}
           target={external ? "_blank" : undefined}
-          rel={external ? "noopener noreferrer" : undefined}
+          rel={external ? "noopener" : undefined}
           class="nav-link"
         >
           {label}
@@ -31,13 +35,8 @@ const navLinks = [
     </nav>
 
     <div class="hidden md:flex shrink-0">
-      <a
-        href="https://www.mtechzilla.com/contact"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="nav-cta"
-      >
-        Hire Me
+      <a href="https://www.mtechzilla.com/contact" target="_blank" rel="noopener noreferrer" class="nav-cta">
+        Talk to Me About AI
       </a>
     </div>
 
@@ -53,12 +52,12 @@ const navLinks = [
     </button>
   </div>
 
-  <div class="hidden md:hidden bg-white border-t border-border px-6 py-5 flex-col gap-4" data-mobile-menu>
+  <div class="hidden md:hidden bg-background border-t border-border px-6 py-5 flex-col gap-4" data-mobile-menu>
     {navLinks.map(({ label, href, external }) => (
       <a
         href={href}
         target={external ? "_blank" : undefined}
-        rel={external ? "noopener noreferrer" : undefined}
+        rel={external ? "noopener" : undefined}
         class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
         data-mobile-link
       >
@@ -72,7 +71,7 @@ const navLinks = [
       class="nav-cta self-start mt-1"
       data-mobile-link
     >
-      Hire Me
+      Talk to Me About AI
     </a>
   </div>
 </header>
@@ -87,7 +86,7 @@ const navLinks = [
     () => {
       const scrolled = window.scrollY > 10;
       header?.classList.toggle("nav-scrolled", scrolled);
-      header?.classList.toggle("bg-white", !scrolled);
+      header?.classList.toggle("bg-background", !scrolled);
       header?.classList.toggle("border-b", !scrolled);
       header?.classList.toggle("border-border", !scrolled);
     },

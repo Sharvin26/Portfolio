@@ -1,0 +1,93 @@
+---
+import ExpertiseCard from "./ExpertiseCard.astro";
+
+const clusters = [
+  {
+    label: "Retrieval & Knowledge",
+    items: [
+      { label: "RAG", description: "Grounding model outputs in your own data instead of hoping the weights remember it.", href: "/guides/rag" },
+      { label: "Embeddings / Vector DBs", description: "Turning text into vectors you can actually search, cluster, and rank." },
+      { label: "Vector Stores", description: "Picking (and operating) the right store for your retrieval scale — pgvector to dedicated engines." },
+      { label: "Hybrid Search & Reranking", description: "Combining keyword and semantic search, then reranking so the right chunk actually wins." },
+      { label: "Chunking Strategies", description: "The unglamorous decision that determines whether your RAG pipeline works at all." },
+      { label: "Context Engineering", description: "Deciding what actually goes in the prompt — not just writing a better one." },
+      { label: "Context Window", description: "Budgeting tokens like memory: what to keep, summarize, or drop." },
+    ],
+  },
+  {
+    label: "Agents & Orchestration",
+    items: [
+      { label: "AI Agents", description: "Systems that plan, call tools, and act — with real error handling, not a happy-path demo.", href: "/guides/ai-agents" },
+      { label: "Multi-Agent Systems", description: "Coordinating multiple specialized agents without them stepping on each other." },
+      { label: "MCP", description: "The emerging standard for wiring tools and data sources into any model client.", href: "/guides/mcp" },
+      { label: "Tool Calling", description: "Giving a model a typed, constrained way to take real actions." },
+      { label: "Function Calling", description: "Structured, schema-validated requests a model can trigger reliably." },
+      { label: "AI Orchestration", description: "The layer that routes, retries, and sequences calls across models and tools." },
+      { label: "Agent Memory", description: "Short and long-term state so an agent doesn't relearn your business every session." },
+      { label: "Human-in-the-Loop", description: "Deciding exactly where a person should approve, override, or veto the model." },
+      { label: "LLM Gateways / Routing", description: "One interface in front of many providers — for cost, fallback, and control." },
+    ],
+  },
+  {
+    label: "Evaluation & Safety",
+    items: [
+      { label: "LLM Evaluation", description: "Measuring whether a change made the system better, not just different.", href: "/guides/llm-evaluation" },
+      { label: "Guardrails", description: "Constraints that keep outputs inside what the business can actually stand behind." },
+      { label: "Prompt Injection", description: "The attack surface every tool-calling agent needs to be designed against." },
+      { label: "AI Hallucination", description: "Where it comes from, and the concrete techniques that reduce it in production." },
+      { label: "Red Teaming", description: "Adversarially testing a system before your users — or the internet — do it for you." },
+      { label: "Structured Output", description: "Getting a model to reliably return JSON your code can trust without regex duct tape." },
+      { label: "LLM Observability", description: "Seeing what a chain or agent actually did, not just what it returned." },
+    ],
+  },
+  {
+    label: "Infra & Performance",
+    items: [
+      { label: "Fine-tuning", description: "When it beats prompting and RAG — and when it's a waste of a training run." },
+      { label: "Prompt Caching", description: "Cutting cost and latency by not re-processing the same context every call." },
+      { label: "Cost Optimization", description: "Token budgets, model tiering, and caching — treated as a real line item." },
+      { label: "Latency Engineering", description: "Streaming, batching, and model choice decisions that make an agent feel instant." },
+      { label: "Quantization", description: "Running bigger models on smaller hardware without wrecking quality." },
+      { label: "Open-Weight Models", description: "When self-hosting beats an API call — for cost, latency, or data control." },
+      { label: "Small Language Models", description: "Right-sizing the model to the task instead of defaulting to the biggest one." },
+      { label: "Streaming Inference", description: "Token-by-token delivery for interfaces that can't afford to wait." },
+    ],
+  },
+  {
+    label: "Voice",
+    items: [
+      { label: "Voice AI Engineering", description: "The full pipeline — ASR, turn-taking, TTS — most \"voice AI\" demos skip." },
+      { label: "Voice AI Agents", description: "Agents that hold a real-time conversation, not a chatbot read aloud.", href: "/guides/voice-ai-agents" },
+    ],
+  },
+];
+---
+
+<section id="expertise" class="py-20 md:py-28 border-b border-border">
+  <div class="max-w-[1200px] mx-auto px-6">
+    <div class="animate-on-scroll">
+      <div class="section-label mb-6">Expertise</div>
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <h2 class="font-display text-3xl md:text-4xl font-extrabold max-w-lg">Where I Go Deep</h2>
+        <p class="text-sm max-w-xs leading-relaxed text-muted-foreground">
+          The AI/LLM engineering surface I work in daily — five guides below go deeper.
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-10">
+        {clusters.map((cluster) => (
+          <div>
+            <h3 class="font-mono text-xs font-semibold tracking-widest uppercase mb-4 text-muted-foreground">
+              {cluster.label}
+            </h3>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {cluster.items.map((item) => (
+                <ExpertiseCard {...item} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

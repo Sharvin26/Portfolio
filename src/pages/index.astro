@@ -3,63 +3,59 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Navbar from "../components/Navbar.astro";
 import Hero from "../components/Hero.astro";
 import About from "../components/About.astro";
+import Expertise from "../components/Expertise.astro";
 import Experience from "../components/Experience.astro";
 import Skills from "../components/Skills.astro";
-import Hobbies from "../components/Hobbies.astro";
 import Footer from "../components/Footer.astro";
+import JsonLd from "../components/schema/JsonLd.astro";
+import { personSchema, organizationSchema } from "../lib/schema";
 
 const siteDescription =
-  "Sharvin Shah is the Founder & CEO of MTechZilla, a software agency helping startups and businesses build full-stack web apps, mobile apps, and AI tools. Based in India.";
+  "Sharvin Shah is CEO & Chief AI Officer at MTechZilla, building RAG pipelines, AI agents, and voice AI systems for teams who need production-grade AI engineering — not a demo.";
 
 const keywords = [
   "Sharvin Shah",
   "MTechZilla",
-  "software agency India",
-  "software development agency",
-  "startup software development",
-  "full-stack development",
-  "SaaS development",
-  "web development",
-  "mobile app development",
-  "AI development",
-  "hire software engineer India",
+  "AI engineer",
+  "AI consulting",
+  "RAG engineering",
+  "AI agents",
+  "LLM evaluation",
+  "voice AI agents",
+  "Model Context Protocol",
+  "AI systems for startups",
 ];
-
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: "Sharvin Shah",
-  url: "https://sharvinshah.com",
-  image: "https://sharvinshah.com/sharvin.png",
-  jobTitle: "Founder & CEO",
-  worksFor: {
-    "@type": "Organization",
-    name: "MTechZilla",
-    url: "https://www.mtechzilla.com",
-  },
-  sameAs: [
-    "https://x.com/sharvinshah26",
-    "https://www.linkedin.com/in/sharvinshah/",
-    "https://github.com/Sharvin26",
-  ],
-  description: siteDescription,
-};
 ---
 
 <BaseLayout
-  title="Sharvin Shah | Founder of MTechZilla - Software Agency"
+  title="Sharvin Shah | CEO & Chief AI Officer, MTechZilla"
   description={siteDescription}
   keywords={keywords}
 >
-  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+  <JsonLd data={[personSchema(), organizationSchema()]} />
   <div class="flex min-h-screen flex-col bg-background">
     <Navbar />
     <Hero />
     <main>
       <About />
+      <Expertise />
       <Experience />
       <Skills />
-      <Hobbies />
+      <section class="py-20 md:py-28">
+        <div class="max-w-[1200px] mx-auto px-6 text-center flex flex-col items-center gap-6">
+          <h2 class="font-display text-3xl md:text-4xl font-extrabold max-w-2xl">
+            Have an AI system that needs to actually work?
+          </h2>
+          <p class="text-base text-muted-foreground max-w-xl leading-relaxed">
+            I take on a limited number of AI engineering engagements — RAG, agents,
+            evals, or voice AI — each quarter. If you're evaluating whether your AI
+            idea can survive production, let's talk.
+          </p>
+          <a href="https://www.mtechzilla.com/contact" target="_blank" rel="noopener noreferrer" class="btn-primary">
+            Talk to Me About AI →
+          </a>
+        </div>
+      </section>
     </main>
     <Footer />
   </div>

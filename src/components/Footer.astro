@@ -4,6 +4,8 @@ import LinkedInIcon from "./icons/LinkedIn.astro";
 import TwitterIcon from "./icons/Twitter.astro";
 import InstagramIcon from "./icons/Instagram.astro";
 
+const FCC_URL = "https://www.freecodecamp.org/news/author/Sharvin26/";
+
 const socialLinks = [
   { label: "LinkedIn", href: "https://www.linkedin.com/in/sharvinshah/", Icon: LinkedInIcon },
   { label: "GitHub", href: "https://github.com/Sharvin26", Icon: GithubIcon },
@@ -12,63 +14,62 @@ const socialLinks = [
 ];
 
 const navColumn = [
-  { label: "About", href: "#about" },
-  { label: "Experience", href: "#experience" },
-  { label: "Skills", href: "#skills" },
-  { label: "Hobbies", href: "#hobbies" },
+  { label: "About", href: "/#about" },
+  { label: "Expertise", href: "/#expertise" },
+  { label: "Experience", href: "/#experience" },
+];
+
+const guidesColumn = [
+  { label: "All Guides", href: "/guides" },
+  { label: "RAG", href: "/guides/rag" },
+  { label: "MCP", href: "/guides/mcp" },
+  { label: "LLM Evaluation", href: "/guides/llm-evaluation" },
+  { label: "AI Agents", href: "/guides/ai-agents" },
+  { label: "Voice AI Agents", href: "/guides/voice-ai-agents" },
 ];
 
 const mtechzillaColumn = [
   { label: "Our Work", href: "https://www.mtechzilla.com/our-work" },
   { label: "Services", href: "https://www.mtechzilla.com/services" },
-  { label: "Blog", href: "https://www.mtechzilla.com/blog" },
   { label: "Contact", href: "https://www.mtechzilla.com/contact" },
-];
-
-const writingColumn = [
-  { label: "freeCodeCamp", href: "https://www.freecodecamp.org/news/author/sharvin/" },
-  { label: "MTechZilla Blog", href: "https://www.mtechzilla.com/blog" },
 ];
 ---
 
-<footer style="background-color: var(--neutral-200)">
-  <div class="border-t" style="border-color: var(--neutral-300)">
+<footer class="bg-card">
+  <div class="border-t border-border">
     <div class="max-w-[1200px] mx-auto px-6 py-14">
       <div class="grid md:grid-cols-[280px_1fr] gap-12 md:gap-20">
         <div class="flex flex-col gap-6">
           <div>
-            <p class="text-base font-bold tracking-wide mb-3" style="color: var(--neutral-700)">
-              Sharvin Shah
-            </p>
-            <p class="text-sm leading-relaxed" style="color: var(--neutral-500)">
-              Founder &amp; CEO of MTechZilla. Building software for startups since 2021.
+            <p class="text-base font-bold tracking-wide mb-3">Sharvin Shah</p>
+            <p class="text-sm leading-relaxed text-muted-foreground">
+              CEO &amp; Chief AI Officer at MTechZilla. Building AI systems for
+              startups since 2021.
             </p>
           </div>
           <div class="flex flex-col gap-4">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color: var(--neutral-500)">
-                Start a project
+              <p class="font-mono text-xs font-semibold uppercase tracking-widest mb-1 text-muted-foreground">
+                Talk to me about AI
               </p>
               <a
                 href="https://www.mtechzilla.com/contact"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-70"
-                style="color: var(--primary-700)"
+                class="text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-70 text-primary"
               >
                 mtechzilla.com/contact
               </a>
             </div>
             <div>
-              <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color: var(--neutral-500)">
+              <p class="font-mono text-xs font-semibold uppercase tracking-widest mb-1 text-muted-foreground">
                 Read my writing
               </p>
               <a
-                href="https://www.freecodecamp.org/news/author/sharvin/"
+                href={FCC_URL}
                 target="_blank"
-                rel="noopener noreferrer"
-                class="text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-70"
-                style="color: var(--primary-700)"
+                rel="noopener"
+                class="text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-70 text-primary"
               >
                 freeCodeCamp
               </a>
@@ -78,13 +79,13 @@ const writingColumn = [
 
         <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
           <div>
-            <p class="text-xs font-bold uppercase tracking-widest mb-4" style="color: var(--primary-700)">
+            <p class="font-mono text-xs font-bold uppercase tracking-widest mb-4 text-primary">
               Navigation
             </p>
             <ul class="flex flex-col gap-2.5">
               {navColumn.map(({ label, href }) => (
                 <li>
-                  <a href={href} class="text-sm transition-colors hover:opacity-70" style="color: var(--neutral-600)">
+                  <a href={href} class="text-sm text-muted-foreground transition-colors hover:opacity-70">
                     {label}
                   </a>
                 </li>
@@ -93,7 +94,22 @@ const writingColumn = [
           </div>
 
           <div>
-            <p class="text-xs font-bold uppercase tracking-widest mb-4" style="color: var(--primary-700)">
+            <p class="font-mono text-xs font-bold uppercase tracking-widest mb-4 text-primary">
+              Guides
+            </p>
+            <ul class="flex flex-col gap-2.5">
+              {guidesColumn.map(({ label, href }) => (
+                <li>
+                  <a href={href} class="text-sm text-muted-foreground transition-colors hover:opacity-70">
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <p class="font-mono text-xs font-bold uppercase tracking-widest mb-4 text-primary">
               MTechZilla
             </p>
             <ul class="flex flex-col gap-2.5">
@@ -103,29 +119,7 @@ const writingColumn = [
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-sm transition-colors hover:opacity-70"
-                    style="color: var(--neutral-600)"
-                  >
-                    {label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <p class="text-xs font-bold uppercase tracking-widest mb-4" style="color: var(--primary-700)">
-              Writing
-            </p>
-            <ul class="flex flex-col gap-2.5">
-              {writingColumn.map(({ label, href }) => (
-                <li>
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-sm transition-colors hover:opacity-70"
-                    style="color: var(--neutral-600)"
+                    class="text-sm text-muted-foreground transition-colors hover:opacity-70"
                   >
                     {label}
                   </a>
@@ -138,11 +132,9 @@ const writingColumn = [
     </div>
   </div>
 
-  <div class="border-t" style="border-color: var(--neutral-300)">
+  <div class="border-t border-border">
     <div class="max-w-[1200px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <p class="text-xs" style="color: var(--neutral-500)">
-        © 2026, Sharvin Shah. All rights reserved.
-      </p>
+      <p class="text-xs text-muted-foreground">© 2026, Sharvin Shah. All rights reserved.</p>
 
       <div class="flex items-center gap-2">
         {socialLinks.map(({ label, href, Icon }) => (
